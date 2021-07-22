@@ -1,0 +1,26 @@
+{
+  "name": "cibo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "ciboschemas.js",
+  "scripts": {
+    "start": "node controller",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "ejs": "^3.1.6",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "jwt-redis": "^6.0.0",
+    "md5": "^2.3.0",
+    "mongoose": "^5.13.2",
+    "multer": "^1.4.2",
+    "nodemailer": "^6.6.3",
+    "otp-generator": "^2.0.1",
+    "redis": "^3.1.2"
+  }
+}

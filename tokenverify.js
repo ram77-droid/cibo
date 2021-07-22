@@ -1,0 +1,51 @@
+var cibo= require('./ciboschemas.js');
+var express = require('express');   
+var app = express();
+var body_parser = require('body-parser');
+app.use(body_parser.json());
+var jwt = require('jsonwebtoken');
+module.exports.check= function check(req,res,next)
+{
+    if(req.headers.authorization)
+    {
+        token=req.headers.authorization.split(' ')[1];
+       
+        var vary=jwt.verify(token,'ram');
+       
+        cibo.users.findOne({email:vary.email},function(err,result){
+           
+            if(err)
+            {
+                return res.json({
+                    message:err.message
+                });
+            }
+            else if(result)
+            {
+               if(result.token==token)
+                {
+                    next();
+                }
+                else
+                {
+                    return res.json({
+                        message:"incorrect token"
+                    });
+                }                             
+            }
+            else
+            {
+                return res.json({
+                    message:"token not found!!"
+                })
+            }
+        });
+    }
+    else
+    {
+        return res.json({
+            message:"not authorized!!"
+        });
+    }
+
+};
