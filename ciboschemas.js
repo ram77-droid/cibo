@@ -59,7 +59,9 @@ var user_schema=new Schema({
     },
     delivery_type:
     {
-        enum:["delivery","pick up"]
+        type:String,
+        enum:['delivery','pick up'],
+        default:'delivery'
     }
 });
 

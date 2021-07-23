@@ -12,6 +12,7 @@
     var nodemailer=require('nodemailer');
     var ejs=require('ejs');
     var midleware=require('./tokenverify.js');
+    var valid=require('validator');
 
     var mail= /^[a-zA-Z0-9_\-]+[@][a-z]+[\.][a-z]{2,3}$/;
     var pass= /^[0-9]{6,}$/;
@@ -418,7 +419,7 @@
                 });
             }
             else if(result)
-            {
+            {               
                 obj={
                     pan_card_image:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,
                     adhar_card_image_front:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,
@@ -427,13 +428,11 @@
                         account_number:req.body.account_number,
                         account_holder_name:req.body.account_holder_name,
                         ifse_code:req.body.ifse_code,
-                        bank_name:req.body.bank_name,
-                        delivery_type:req.body.delivery_type
-                    }
-                   
+                        bank_name:req.body.bank_name                        
+                    }             
                 }
-
-                cibo.users.updateOne(obj,function(err,success){
+                cibo.users.updateOne({_id:vary._id},obj,function(err,success){
+                    //console.log("object:",obj);
                     if(err)
                     {
                         return res.status(400).json({
@@ -443,11 +442,22 @@
                     }
                     else if(success)
                     {
-                        console.log("success",success);
-                        return res.status(200).json({
-                            status:200,
-                            message:"now you become seller"
-                        });
+                        cibo.users.updateOne({_id:vary._id},{delivery_type:req.body.delivery_type},{runValidators:true},function(err,result){
+                            if(err)
+                            {
+                                return res.status(400).json({
+                                    status:400,
+                                    message:err.message
+                                });
+                            }
+                            else if(result)
+                            {
+                                return res.status(200).json({
+                                    status:200,
+                                    message:"now you become seller"
+                                });
+                            }
+                        });                       
                     }
                 });
             }
