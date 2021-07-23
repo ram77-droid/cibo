@@ -688,42 +688,43 @@
                else
                {
                 cibo.users.updateOne({_id:vary._id},{image:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no},function(err,success){
-                    if(err)
-                    {
-                        return res.status(400).json({
-                            status:400,
-                            message:err.message
-                        });
-                    }
-                    else if(success)
-                    {
-                        return res.status(200).json({
-                            status:200,
-                            message:"your profile updated"
-                        });
-                    }
-                });
-               }
-               
-                cibo.users.updateOne({_id:vary._id},{image:req.body.image,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no},function(err,success){
-                    if(err)
-                    {
-                        return res.status(400).json({
-                            status:400,
-                            message:err.message
-                        });
-                    }
-                    else if(success)
-                    {
-                        return res.status(200).json({
-                            status:200,
-                            message:"your profile updated"
-                        });
-                    }
-                });
-            }
-        });
+                        if(err)
+                        {
+                            return res.status(400).json({
+                                status:400,
+                                message:err.message
+                            });
+                        }
+                        else if(success)
+                        {
+                            return res.status(200).json({
+                                status:200,
+                                message:"your profile updated"
+                            });
+                        }
+                    });
+               }            
+
+            cibo.users.updateOne({_id:vary._id},{image:req.body.image,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no},function(err,success){
+              
+                if(err)
+                {
+                    return res.status(400).json({
+                        status:400,
+                        message:err.message
+                    });
+                }
+                else if(success)
+                {
+                    return res.status(200).json({
+                        status:200,
+                        message:"your profile updated"
+                    });
+                }
+            });
+        }
     });
+});
 
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, function(){
