@@ -438,7 +438,7 @@
                             account_holder_name:req.body.account_holder_name,
                             ifse_code:req.body.ifse_code,
                             bank_name:req.body.bank_name                        
-                        }             
+                        }                                
                     }
                     cibo.users.updateOne({_id:vary._id},obj,function(err,success){
                         //console.log("object:",obj);
@@ -724,7 +724,71 @@
             });
         }
     });
-});
+   });
+
+   // schedule API
+   app.post('/schedule',function(req,res){
+       token=req.headers.authorization.split(' ')[1];
+       var vary=jwt.verify(token,'ram');
+       cibo.users.findOneAndUpdate({_id:vary._id},{schedule:req.body.schedule},function(err,result){
+           if(err)
+           {
+               return res.status(400).json({
+                   status:400,
+                   message:err.message
+               });
+           }
+           else if(result)
+           {
+            return res.status(200).json({
+                status:200,
+                message:"updated"
+            });
+           }
+       })
+   });
+
+   // Blog API
+   app.post('/blog',upload.any(),function(req,res){
+       token=req.headers.authorization.split(' ')[1];
+       var vary=jwt.verify(token,'ram');
+       cibo.users.findOne({_id:vary._id},function(err,result){
+           if(err)
+           {
+               return res.status(400).json({
+                   status:400,
+                   message:err.message
+               });
+           }
+           else if(result)
+           {
+               obj=
+               {
+                   pictures:req.files[0].filename,
+                   user_id:result._id,
+                   title:req.body.title,
+                   description:req.body.description
+               }
+              cibo.blog.create(obj,function(err,success){
+                  if(err)
+                  {
+                    return res.status(400).json({
+                        status:400,
+                        message:err.message
+                    });
+                  }
+                  else if(success)
+                  {
+                    return res.status(200).json({
+                        status:200,
+                        message:"blog added"
+                    });
+                  }
+              });
+           }
+       });
+   });
+ 
 
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, function(){

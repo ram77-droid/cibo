@@ -62,6 +62,15 @@ var user_schema=new Schema({
         type:String,
         enum:['delivery','pick up'],
         default:'delivery'
+    },
+    schedule:
+    {
+        date:Date,
+        time:
+        {
+            from:String,
+            to:String
+        }
     }
 });
 
@@ -125,12 +134,12 @@ quantity:Number
 
 // blog schema
 var blog_schema=new Schema({
-    seller_id:
+    user_id:
     {
         type:mongoose.Types.ObjectId,
         ref:'users'
     },
-    pictures:Array,
+    pictures:String,
     title:String,
     description:String
 });
