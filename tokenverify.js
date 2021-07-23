@@ -3,16 +3,18 @@ var express = require('express');
 var app = express();
 var body_parser = require('body-parser');
 app.use(body_parser.json());
+app.use(body_parser.urlencoded({ extended: false }));
 var jwt = require('jsonwebtoken');
 module.exports.check= function check(req,res,next)
 {
-    if(req.headers.authorization)
+   
+        if(req.headers.authorization)
     {
         token=req.headers.authorization.split(' ')[1];
        
         var vary=jwt.verify(token,'ram');
        
-        cibo.users.findOne({email:vary.email},function(err,result){
+        cibo.users.findOne({_id:vary._id},function(err,result){
            
             if(err)
             {
@@ -22,6 +24,7 @@ module.exports.check= function check(req,res,next)
             }
             else if(result)
             {
+               
                if(result.token==token)
                 {
                     next();

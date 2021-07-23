@@ -427,7 +427,8 @@
                         account_number:req.body.account_number,
                         account_holder_name:req.body.account_holder_name,
                         ifse_code:req.body.ifse_code,
-                        bank_name:req.body.bank_name
+                        bank_name:req.body.bank_name,
+                        delivery_type:req.body.delivery_type
                     }
                    
                 }
@@ -442,6 +443,7 @@
                     }
                     else if(success)
                     {
+                        console.log("success",success);
                         return res.status(200).json({
                             status:200,
                             message:"now you become seller"
