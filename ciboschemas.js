@@ -57,7 +57,7 @@ var user_schema=new Schema({
         ifse_code:Number,
         bank_name:String
     },
-    delivery_type:
+    delivery_option:
     {
         type:String,
         enum:['delivery','pick up'],
