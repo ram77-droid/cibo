@@ -12,8 +12,6 @@
     var nodemailer=require('nodemailer');
     var ejs=require('ejs');
     var midleware=require('./tokenverify.js');
-    var valid=require('validator');
-
     var mail= /^[a-zA-Z0-9_\-]+[@][a-z]+[\.][a-z]{2,3}$/;
     var pass= /^[0-9]{6,}$/;
     var phone=/^[0-9]{10}$/;
@@ -296,53 +294,16 @@
 
     // forget password API
     app.post('/forgetpassword',function(req,res){
-        cibo.users.findOne({email:req.body.email},function(err,result){
-            if(err)
-            {
-                return res.status(400).json({
-                    status:400,
-                    message:err.message
-                });
-            }
-            else if(result)
-            {
-               
-                var transport = nodemailer.createTransport({
-                    host: "smtp.mailtrap.io",
-                    port: 2525,
-                    auth: {
-                      user: "2e166ed4f7c2ea",
-                      pass: "8e629cdfa30baf"
-                    }
-                  });
-                  let url = '<a href="http://'+req.headers.host+'/pass'+'">http://'+req.headers.host+'/pass'+'</a>';
-                  console.log("url",url);
-               
-                   transport.sendMail({
-                    from: 'ramm00324@gmail.com', // sender address
-                    to: req.body.email, // list of receivers                    
-                    text: 'Hello world ?', // plaintext body
-                    html:'<p>We just acknowledged that you have requested to change your account password. You can change your password by clicking on the link below.</p>'+url+'<p>If you did not make this request. Please ignore this email.</p>'             
-                    
-                 });
-                 return res.status(200).json({
-                     status:200,
-                     message:"link sent on your email"
-                 });
-
-            }
-        });
-    });
-
-    // reset password API
-    app.post('/resetpassword',function(req,res){
-        
-        //console.log("req",req.body);
-        if(req.body.password==req.body.confirm_password)
+        if(mail.test(req.body.email)==false||req.body.email==''||req.body.email==null)
         {
-            req.body.password=md(req.body.password);
-        req.body.confirm_password=md(req.body.confirm_password);
-            cibo.users.updateOne({email:req.body.email},{password:req.body.password,confirm_password:req.body.confirm_password},function(err,success){
+            return res.status(400).json({
+                status:400,
+                message:"emial is not valid"
+            });
+        }
+        else 
+        {
+            cibo.users.findOne({email:req.body.email},function(err,result){
                 if(err)
                 {
                     return res.status(400).json({
@@ -350,22 +311,77 @@
                         message:err.message
                     });
                 }
-                else if(success)
-                {
-                    return res.status(200).json({
-                        status:200,
-                        message:"password reset"
-                    });
+                else if(result)
+                {                   
+                    var transport = nodemailer.createTransport({
+                        host: "smtp.mailtrap.io",
+                        port: 2525,
+                        auth: {
+                          user: "2e166ed4f7c2ea",
+                          pass: "8e629cdfa30baf"
+                        }
+                      });
+                      let url = '<a href="http://'+req.headers.host+'/pass'+'">http://'+req.headers.host+'/pass'+'</a>';
+                      console.log("url",url);
+                   
+                       transport.sendMail({
+                        from: 'ramm00324@gmail.com', // sender address
+                        to: req.body.email, // list of receivers                    
+                        text: 'Hello world ?', // plaintext body
+                        html:'<p>We just acknowledged that you have requested to change your account password. You can change your password by clicking on the link below.</p>'+url+'<p>If you did not make this request. Please ignore this email.</p>'             
+                        
+                     });
+                     return res.status(200).json({
+                         status:200,
+                         message:"link sent on your email"
+                     });
+    
                 }
+            });
+        }       
+    });
+
+    // reset password API
+    app.post('/resetpassword',function(req,res){
+        if(pass.test(req.body.password)==false || req.body.password==' '|| req.body.password==null)
+        {
+            return res.status(400).json({
+                status:400,
+                message:err.message
             });
         }
         else
         {
-            return res.status(400).json({
-                status:400,
-                message:"password mismatch"
-            });
+            if(req.body.password==req.body.confirm_password)
+            {
+                req.body.password=md(req.body.password);
+            req.body.confirm_password=md(req.body.confirm_password);
+                cibo.users.updateOne({email:req.body.email},{password:req.body.password,confirm_password:req.body.confirm_password},function(err,success){
+                    if(err)
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:err.message
+                        });
+                    }
+                    else if(success)
+                    {
+                        return res.status(200).json({
+                            status:200,
+                            message:"password reset"
+                        });
+                    }
+                });
+            }
+            else
+            {
+                return res.status(400).json({
+                    status:400,
+                    message:"password mismatch"
+                });
+            }
         }
+       
     });
 
     //password screen API
@@ -742,7 +758,7 @@
            {
             console.log("old pass:",req.body.old_password);
                req.body.old_password=md(req.body.old_password);
-               
+
                if(req.body.old_password==result.password)
                {                   
                    if(pass.test(req.body.new_password)==false||req.body.new_password==''||req.body.new_password==null)
