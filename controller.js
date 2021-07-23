@@ -756,47 +756,66 @@
            }
            else if(result)
            {
-            console.log("old pass:",req.body.old_password);
-               req.body.old_password=md(req.body.old_password);
-
-               if(req.body.old_password==result.password)
-               {                   
-                   if(pass.test(req.body.new_password)==false||req.body.new_password==''||req.body.new_password==null)
-                        {
-                            return res.status(400).json({
-                                status:400,
-                                message:"password should be minimum 6 digits"
-                            });
-                        }
-                        else
-                        {
-                            req.body.new_password=md(req.body.new_password);
-                            cibo.users.updateOne({_id:vary._id},{password:req.body.new_password,confirm_password:req.body.new_password},function(err,success){
-                                if(err)
-                                {
-                                    return res.status(400).json({
-                                        status:400,
-                                        message:err.message
-                                    });
-                                }
-                                else if(success)
-                                {
-                                    return res.status(200).json({
-                                        status:200,
-                                        message:"password updated"
-                                    });
-                                }
-
-                            })
-                        }
-                }
-                else
-                {
+               if(pass.test(req.body.old_password)==false ||req.body.old_password==' '|| req.body.old_password==null)
+               {
+                   return res.status(400).json({
+                       status:400,
+                       message:"invalid password"
+                   });
+               }
+               else if(pass.test(req.body.new_password)==false || req.body.new_password==' '|| req.body.new_password==null)
+               {
                     return res.status(400).json({
                         status:400,
-                        message:"old password doesn't match!! please check "
+                        message:"invalid password"
                     });
-                }
+               }
+
+               else
+               {
+                    console.log("old pass:",req.body.old_password);
+                    req.body.old_password=md(req.body.old_password);
+    
+                    if(req.body.old_password==result.password)
+                    {                   
+                        if(pass.test(req.body.new_password)==false||req.body.new_password==''||req.body.new_password==null)
+                            {
+                                return res.status(400).json({
+                                    status:400,
+                                    message:"password should be minimum 6 digits"
+                                });
+                            }
+                            else
+                            {
+                                req.body.new_password=md(req.body.new_password);
+                                cibo.users.updateOne({_id:vary._id},{password:req.body.new_password,confirm_password:req.body.new_password},function(err,success){
+                                    if(err)
+                                    {
+                                        return res.status(400).json({
+                                            status:400,
+                                            message:err.message
+                                        });
+                                    }
+                                    else if(success)
+                                    {
+                                        return res.status(200).json({
+                                            status:200,
+                                            message:"password updated"
+                                        });
+                                    }
+    
+                                })
+                            }
+                    }
+                    else
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:"old password doesn't match!! please check "
+                        });
+                    }
+               }
+           
            }
        });
    });
