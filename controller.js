@@ -42,7 +42,7 @@
         {
             return res.status(400).json({
                 status:400,
-                message:"password should be minimum 6 "
+                message:"password should be minimum of 6 "
             });
         }
 
@@ -55,13 +55,12 @@
         }
         else
         {
-
             req.body.password=md(req.body.password);
         req.body.confirm_password=md(req.body.confirm_password);
             if(req.body.password==req.body.confirm_password)
             {
                 obj={
-                    image:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,
+                   // image:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,
                     name:req.body.name,
                     email:req.body.email,
                     password:req.body.password,
@@ -103,8 +102,7 @@
                             });
                         }
                         else if(token_result)
-                        {
-                            //console.log("token:",token_result);
+                        {                            
                            cibo.users.updateOne({_id:result._id},{token:token_result},function(err,success){
                                if(err)
                                {
@@ -665,6 +663,18 @@
                 req.body.email=result.email,
                 req.body.phone_no=result.phone_no
                }
+               else if(req.body.image==null && req.body.name==null && req.body.phone_no==null)
+               {
+                   req.body.image=result.image;
+                   req.body.name=result.name;
+                   req.body.phone_no=result.phone_no;
+               }
+            else if(req.body.image=null && req.body.name==null && req.body.email==null)
+            {
+                req.body.image=result.image;
+                req.body.name=result.name;
+                req.body.email=result.email;
+            }
                else if(req.body.email==null && req.body.phone_no==null)
                {
                 req.body.email=result.email,
@@ -703,7 +713,9 @@
                }
                else
                {
-                cibo.users.updateOne({_id:vary._id},{image:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no},function(err,success){
+                   if(req.body.image)
+                   {
+                    cibo.users.updateOne({_id:vary._id},{image:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no},function(err,success){
                         if(err)
                         {
                             return res.status(400).json({
@@ -719,9 +731,9 @@
                             });
                         }
                     });
-               }            
-
-            cibo.users.updateOne({_id:vary._id},{image:req.body.image,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no},function(err,success){
+                   }            
+               }  
+               cibo.users.updateOne({_id:vary._id},{image:req.body.image,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no},function(err,success){
               
                 if(err)
                 {
@@ -737,7 +749,7 @@
                         message:"your profile updated"
                     });
                 }
-            });
+            });    
         }
     });
    });
