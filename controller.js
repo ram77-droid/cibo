@@ -798,7 +798,7 @@
                }
                else
                {
-                cibo.users.updateOne({_id:vary._id},{image:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no},function(err,success){
+                cibo.users.updateOne({_id:vary._id},{image:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no,bio:req.body.bio},function(err,success){
               
                     if(err)
                     {
@@ -816,7 +816,7 @@
                     }
                  });                           
                }  
-               cibo.users.updateOne({_id:vary._id},{image:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no},function(err,success){
+               cibo.users.updateOne({_id:vary._id},{image:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no,bio:req.body.bio},function(err,success){
                 if(err)
                 {
                     return res.status(400).json({
