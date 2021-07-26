@@ -30,7 +30,7 @@
     const profile=multer({storage:storage});
 
     // sign up API
-    app.post('/signup',profile.any(),function(req,res){
+    app.post('/signup',function(req,res){
         if(mail.test(req.body.email)==false||req.body.email==''||req.body.email==null)
         {
             return res.status(400).json({
@@ -128,7 +128,7 @@
                     {
                         return res.status(400).json({
                             status:400,
-                            message:"kuch roh glt hai"
+                            message:"something wrong"
                         });
                     }
             });
@@ -438,7 +438,10 @@
                 if(req.body.delivery_option==null)
                 {
                     obj={
+                        image:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,
+                        pan_card_number:req.body.pan_card_number,
                         pan_card_image:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,
+                        adhar_number:req.body.adhar_number,
                         adhar_card_image_front:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,
                         adhar_card_image_back:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,
                         physical_address:{
@@ -713,28 +716,25 @@
                }
                else
                {
-                   if(req.body.image)
-                   {
-                    cibo.users.updateOne({_id:vary._id},{image:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no},function(err,success){
-                        if(err)
-                        {
-                            return res.status(400).json({
-                                status:400,
-                                message:err.message
-                            });
-                        }
-                        else if(success)
-                        {
-                            return res.status(200).json({
-                                status:200,
-                                message:"your profile updated"
-                            });
-                        }
-                    });
-                   }            
+                cibo.users.updateOne({_id:vary._id},{image:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no},function(err,success){
+              
+                    if(err)
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:err.message
+                        });
+                    }
+                    else if(success)
+                    {
+                        return res.status(200).json({
+                            status:200,
+                            message:"your profile updated"
+                        });
+                    }
+                 });                           
                }  
                cibo.users.updateOne({_id:vary._id},{image:req.body.image,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no},function(err,success){
-              
                 if(err)
                 {
                     return res.status(400).json({
@@ -749,7 +749,8 @@
                         message:"your profile updated"
                     });
                 }
-            });    
+            }); 
+                   
         }
     });
    });

@@ -17,7 +17,8 @@ var user_schema=new Schema({
     },
     password:String,
     confirm_password:String,
-    otp:Number,
+    otp:String,
+    bio:String,
     location:
     {
         type:{ type: String },
@@ -39,7 +40,7 @@ var user_schema=new Schema({
     image:String,
   
     // seller details
-    pan_card_number:Number,
+    pan_card_number:String,
     adhar_number:Number,
     pan_card_image:String,
     adhar_card_image_front:String,
@@ -60,8 +61,7 @@ var user_schema=new Schema({
     delivery_option:
     {
         type:String,
-        enum:['delivery','pick up'],
-        default:'delivery'
+        enum:['delivery','pick up']       
     },
     schedule:
     {
