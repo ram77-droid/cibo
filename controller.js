@@ -116,6 +116,7 @@
                                    return res.status(200).json({
                                        status:200,
                                        data:obj1,
+                                       message:"user created",
                                        token:token_result
                                    });
                                }
@@ -162,7 +163,7 @@
             {
                 return res.status(200).json({
                     status:200,
-                    message:"sign up successful"
+                    message:"otp matched"
                 });
             }
         }
@@ -436,26 +437,51 @@
             {               
                 
                 if(req.body.delivery_option==null)
-                {
+                {                   
+                    if(req.files.length!=4)
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:"please add all images"
+                        });
+                    }
+                    var i=0;
+                    for(i;i<req.files.length;i++)
+                    {                      
+                        if(req.files[i].fieldname=="image")
+                        {
+                            image=req.files[i].filename;
+                           // console.log("image:",image);
+                        }
+                        else if(req.files[i].fieldname=="pan_card_image")
+                        {
+                            pan_card_image=req.files[i].filename;
+                            //console.log("pan:",pan_card_image);
+                        }
+                        else if(req.files[i].fieldname=="adhar_card_image_front")
+                        {
+                            adhar_card_image_front=req.files[i].filename;
+                           // console.log("adhar front:",adhar_card_image_front);
+                        }
+                        else if(req.files[i].fieldname=="adhar_card_image_back")
+                        {
+                            adhar_card_image_back=req.files[i].filename;
+                           // console.log("adhar back:",adhar_card_image_back);
+                        }
+                    }
                     obj={
-                        image:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,
+                        image:image,
                         pan_card_number:req.body.pan_card_number,
-                        pan_card_image:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,
+                        pan_card_image:pan_card_image,
                         adhar_number:req.body.adhar_number,
-                        adhar_card_image_front:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,
-                        adhar_card_image_back:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,
+                        adhar_card_image_front:adhar_card_image_front,
+                        adhar_card_image_back:adhar_card_image_back,
                         physical_address:{
                             street_name:req.body.street_name,
                             city:req.body.city,
                             state:req.body.state,
                             pin:req.body.pin
-                        },
-                        bank_details:{
-                            account_number:req.body.account_number,
-                            account_holder_name:req.body.account_holder_name,
-                            ifse_code:req.body.ifse_code,
-                            bank_name:req.body.bank_name                        
-                        }                                
+                        }                                                     
                     }
                     cibo.users.updateOne({_id:vary._id},obj,function(err,success){
                         //console.log("object:",obj);
@@ -496,6 +522,39 @@
                 }               
             }
         });
+    });
+    // bank details API
+    app.post('/bank_detail',function(req,res){
+        token=req.headers.authorization.split(' ')[1];
+        var vary=jwt.verify(token,'ram');
+        cibo.users.findOne({_id:vary._id},function(err,success){
+            if(err)
+            {
+                return res.status(400).json({
+                    status:400,
+                    message:err.message
+                });
+            }
+            else if(success)
+            {
+                cibo.users.updateOne({_id:vary._id},{bank_details:req.body.bank_details},function(err,result){
+                    if(err)
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:err.message
+                        });
+                    }
+                    else if(result)
+                    {
+                        return res.status(200).json({
+                            status:200,
+                            message:"bank details updated"
+                        });
+                    }
+                });
+            }
+        });      
     });
 
     // items API   
