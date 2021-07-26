@@ -254,24 +254,25 @@
                 });
             }
             else if(result)
-            {
-                console.log("result:",result.token);
-              if(result.token==null)
-              {
-                jwt.sign(obj,'ram',function(token_error,token_result)
+            {    
+                if(req.body.password==result.password)
                 {
-                    if(token_error)
+                    obj1={
+                            _id:result._id,
+                            email:req.body.email,
+                            phone_no:result.phone_no
+                         }
+                    jwt.sign(obj1,'ram',function(token_error,token_result)
                     {
-                        return res.status(400).json({
-                            status:400,
-                            message:token_error.message
-                        });
-                    }
-                    else if(token_result)
-                    {
-                        console.log("token is:",token_result);
-                        if(result.password==req.body.password)
-                        {                           
+                        if(token_error)
+                        {
+                            return res.status(400).json({
+                                status:400,
+                                message:token_error.message
+                            });
+                        }
+                        else if(token_result)
+                        {
                             cibo.users.updateOne({email:req.body.email},{token:token_result},function(err,result){
                                 if(err)
                                 {
@@ -284,32 +285,21 @@
                                 {
                                     return res.status(200).json({
                                             status:200,
-                                            message:"login successful"
+                                            message:"login successful 1"
                                         });
                                 }
-                            });
+                            });                      
                         }
-                
-                            else
-                            {
-                                return res.status(400).json({
-                                    status:400,
-                                    message:"password mismatch"
-                                });
-                            }
-                    }
-                });
-              }                            
+                    });
+                }                                                        
                 else
                 {
-                    return res.status(200).json({
-                        status:200,
-                        message:"login successful"
+                    return res.status(400).json({
+                        status:400,
+                        message:"password not match"
                     });
-                }
-                
-            }
-           
+                }                
+            }           
         });
     });
 
@@ -985,6 +975,73 @@
                     });
                   }
               });
+           }
+       });
+   });
+
+   // get order API
+   app.get('/getorder',function(req,res){
+       token=req.headers.authorization.split(' ')[1];
+       var vary=jwt.verify(token,'ram');
+       cibo.users.findOne({_id:vary._id},function(err,result){
+          
+           if(err)
+           {
+               return res.status(400).json({
+                   status:400,
+                   message:err.message
+               });
+           }
+           else if(result)
+           {
+               cibo.order.aggregate([
+                   {
+                       $lookup:
+                       {
+                           from:"items",
+                           localField:"item_id",
+                           foreignField:"_id",
+                           as:"order_item"
+                       }
+                   },
+
+                   {                   
+                   $project:
+                   {
+                       user_id:1,
+                       seller_id:1,
+                       item_id:1,
+                       quantity:1,
+                       "order_item.picture":1,
+                       "order_item.item_name":1,
+                       "order_item.price":1
+                   }
+                }
+                // {
+                //     $addFields:
+                //     {
+                //         picture:"$order_item.picture"
+                //         // item_name:"$order_item.item_name",
+                //         // price:"$order_item.price"
+                //     }
+                // }
+               
+               ],function(err,result){
+                   if(err)
+                   {
+                       return res.status(400).json({
+                           status:400,
+                           message:err.message
+                       });
+                   }
+                   else if(result)
+                   {
+                       return res.status(200).json({
+                           status:200,
+                           message:result
+                       });
+                   }
+               });
            }
        });
    });

@@ -145,21 +145,6 @@ var blog_schema=new Schema({
     description:String
 });
 
-// bank_detail schema
-
-// var bank_detail=new Schema({
-//     seller_id:
-//     {
-//         type:mongoose.Types.ObjectId,
-//         ref:'users'
-//     },
-//     Account_number:Number,
-//     account_holder_name:String,
-//     ifse_code:String,
-//     bank_name:String
-
-// });
-
 // payment schema
 var payment_schema=new Schema({
     User_id:
