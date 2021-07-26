@@ -608,8 +608,7 @@
                 });
             }
             else if(result)
-            {
-                              
+            {                              
                 obj=
                 {
                     seller_id:result._id,
@@ -1014,6 +1013,7 @@
                        quantity:1,
                        "order_item.picture":1,
                        "order_item.item_name":1,
+                       "order_item.item_category":1,
                        "order_item.price":1
                    }
                 }
