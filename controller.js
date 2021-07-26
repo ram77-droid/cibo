@@ -49,6 +49,7 @@
                     message:"already exist"
                 });
             }
+            // validations
             else 
             {
                 if(mail.test(req.body.email)==false||req.body.email==''||req.body.email==null)
@@ -73,6 +74,7 @@
                 message:"phone_no should be of 10 digit"
             });
         }
+       
         else
         {
             req.body.password=md(req.body.password);
@@ -166,7 +168,7 @@
         }   
      }
     });
-});
+  });
         
 
     // verifying OTP API
@@ -447,6 +449,21 @@
 
     // seller API
     app.post('/becomeseller',profile.any(),midleware.check,function(req,res){
+
+         if(req.body.pan_card_number.length!=10)
+        {
+            return res.status(400).json({
+                status:400,
+                message:"enter correct pan card number"
+            });
+        }
+        else if(req.body.adhar_number.length!=12)
+        {
+            return res.status(400).json({
+                status:400,
+                message:"enter correct adhar card number"
+            });
+        }
         token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
        

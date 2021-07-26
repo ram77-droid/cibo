@@ -41,7 +41,7 @@ var user_schema=new Schema({
   
     // seller details
     pan_card_number:String,
-    adhar_number:Number,
+    adhar_number:String,
     pan_card_image:String,
     adhar_card_image_front:String,
     adhar_card_image_back:String,
