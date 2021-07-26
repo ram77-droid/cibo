@@ -31,13 +31,33 @@
 
     // sign up API
     app.post('/signup',function(req,res){
-        if(mail.test(req.body.email)==false||req.body.email==''||req.body.email==null)
-        {
-            return res.status(400).json({
-                status:400,
-                message:"email is not valid"
-            });
-        }
+        cibo.users.findOne({$or:[
+            {email:req.body.email},
+            {phone_no:req.body.phone_no}
+        ]},function(err,success){
+            if(err)
+            {
+                return res.status(400).json({
+                    status:400,
+                    message:err.message
+                });
+            }
+            else if(success)
+            {
+                return res.status(200).json({
+                    status:200,
+                    message:"already exist"
+                });
+            }
+            else 
+            {
+                if(mail.test(req.body.email)==false||req.body.email==''||req.body.email==null)
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:"email is not valid"
+                        });
+                    }
         else if(pass.test(req.body.password)==false||req.body.password==''||req.body.password==null)
         {
             return res.status(400).json({
@@ -91,7 +111,8 @@
                         {
                             _id:result._id,
                             name:result.name,
-                            email:result.email
+                            email:result.email,
+                            phone_no:result.phone_no
                         }
                     jwt.sign(obj1,'ram',function(token_error,token_result){
                         if(token_error)
@@ -132,8 +153,7 @@
                             message:"something wrong"
                         });
                     }
-            });
-           
+            });          
             
             }
             else
@@ -144,12 +164,16 @@
                 });
             }
         }   
-    
+     }
     });
+});
+        
 
     // verifying OTP API
     app.post('/verify',function(req,res){
-    cibo.users.findOne({otp:req.body.otp},function(err,result){
+        token=req.headers.authorization.split(' ')[1];
+        var vary=jwt.verify(token,'ram');
+    cibo.users.findOne({_id:vary._id},function(err,result){
         if(err)
         {
                 return res.status(400).json({
@@ -166,14 +190,15 @@
                     message:"otp matched"
                 });
             }
+            else
+            {
+                    return res.status(400).json({
+                        status:400,
+                        message:"otp doesn't matched"
+                    });
+            }
         }
-        else
-        {
-                return res.status(400).json({
-                    status:400,
-                    message:"otp doesn't matched"
-                });
-        }
+        
     });
     });
 
@@ -183,7 +208,7 @@
         token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
         console.log('vary',vary);
-        cibo.users.findOne({email:vary.email},function(err,success){
+        cibo.users.findOne({phone_no:vary.phone_no},function(err,success){
             if(err)
             {
                 return res.status(400).json({
@@ -793,7 +818,7 @@
                     }
                  });                           
                }  
-               cibo.users.updateOne({_id:vary._id},{image:req.body.image,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no},function(err,success){
+               cibo.users.updateOne({_id:vary._id},{image:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no},function(err,success){
                 if(err)
                 {
                     return res.status(400).json({
