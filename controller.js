@@ -640,6 +640,40 @@
         })
     });
 
+    // view items API
+    app.get('/viewitem',function(req,res){
+        token=req.headers.authorization.split(' ')[1];
+        var vary=jwt.verify(token,'ram');
+        cibo.users.findOne({_id:vary._id},function(err,result){
+            if(err)
+            {
+                return res.status(400).json({
+                    status:400,
+                    message:err.message
+                });
+            }
+            else if(result)
+            {
+                cibo.items.find({seller_id:vary._id},function(err,success){
+                    if(err)
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:err.message
+                        });
+                    }
+                    else if(success)
+                    {
+                        return res.status(200).json({
+                            status:200,
+                            message:success
+                        });
+                    }
+                });
+            }
+        });
+    });
+
     // order API
     app.post('/order',function(req,res){
         token=req.headers.authorization.split(' ')[1];
