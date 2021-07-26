@@ -16,7 +16,6 @@
     var pass= /^[0-9]{6,}$/;
     var phone=/^[0-9]{10}$/;
 
-   
     app.use(express.static(__dirname));
     console.log("dirname:",__dirname);
     const storage=multer.diskStorage({
@@ -272,11 +271,7 @@
                     {
                         console.log("token is:",token_result);
                         if(result.password==req.body.password)
-                        {
-                            // return res.status(200).json({
-                            //     status:200,
-                            //     message:"login successful"
-                            // });
+                        {                           
                             cibo.users.updateOne({email:req.body.email},{token:token_result},function(err,result){
                                 if(err)
                                 {
@@ -611,9 +606,7 @@
         }
     });
     const upload=multer({storage:store});
-    app.post('/items',upload.any(),midleware.check,function(req,res){
-
-        
+    app.post('/items',upload.any(),midleware.check,function(req,res){        
         token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
         cibo.users.findOne({_id:vary._id},function(err,result){
@@ -633,7 +626,7 @@
                     picture:req.files[0].filename,
                     item_name:req.body.item_name,
                     item_category:req.body.item_category,
-                    price:req.body.price,
+                    price:"Rs "+req.body.price,
                     description:req.body.description,
                     special_notes:req.body.special_notes
                 }
@@ -671,13 +664,12 @@
                 });
             }
             else if(result)
-            {
-                console.log("email:",result._id);
+            {                
                 obj={
                     user_id:result._id,
                     seller_id:req.body.seller_id,
                     item_id:req.body.item_id,
-                    quantity:req.body.quantity
+                    quantity:req.body.quantity                   
                 }
                 cibo.order.create(obj,function(err,result){
                     if(err)

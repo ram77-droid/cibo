@@ -128,7 +128,8 @@ item_id:
     type:mongoose.Types.ObjectId,
     ref:'items'
 },
-quantity:Number
+quantity:Number,
+price:String
 
 });
 
