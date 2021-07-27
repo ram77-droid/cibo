@@ -89,12 +89,12 @@
                     confirm_password:req.body.confirm_password,
                     phone_no:req.body.phone_no,
                     otp:otpgen.generate(6,{ digits:true, alphabets:false, upperCase: false, specialChars: false }),
-                    location:{
-                        type:"Point",
-                        coordinates:[parseFloat(req.body.long),parseFloat(req.body.lat)]
-                    },
-                    lat:parseFloat(req.body.lat),
-                    long:parseFloat(req.body.long),
+                    // location:{
+                    //     type:"Point",
+                    //     coordinates:[parseFloat(req.body.long),parseFloat(req.body.lat)]
+                    // },
+                    // lat:parseFloat(req.body.lat),
+                    // long:parseFloat(req.body.long),
 
                 }
                
@@ -185,7 +185,7 @@
         }
         else if(result)
         {
-            if(result.otp==req.body.otp)
+            if(result.otp===req.body.otp)
             {
                 return res.status(200).json({
                     status:200,
@@ -240,6 +240,50 @@
                 });
             }
         });   
+    });
+
+    // location API
+    app.post('/location',function(req,res){
+        console.log("reqq:",req.body);
+        token=req.headers.authorization.split(' ')[1];
+        var vary=jwt.verify(token,'ram');
+        cibo.users.findOne({_id:vary._id},function(err,result){
+            if(err)
+            {
+                return res.status(400).json({
+                    status:400,
+                    message:err.message
+                });
+            }
+            else if(result)
+            {
+                console.log("result",result);
+              obj={
+                location:{
+                    type:"Point",
+                    coordinates:[parseFloat(req.body.long),parseFloat(req.body.lat)]
+                },
+                lat:parseFloat(req.body.lat),
+                long:parseFloat(req.body.long),
+              }
+              cibo.users.updateOne({_id:vary._id},obj,function(err,result){
+                  if(err)
+                  {
+                    return res.status(400).json({
+                        status:400,
+                        message:err.message
+                    });
+                  }
+                  else if(result)
+                  {
+                    return res.status(200).json({
+                        status:200,
+                        message:"location added"
+                    });
+                  }
+              });
+            }
+        });
     });
    
     // login API
@@ -1095,116 +1139,6 @@
                });
            }
            else if(result)
-           {
-            cibo.users.aggregate([
-                {
-                    $geoNear:
-                    {
-                        near:result.location,
-                        distanceField:"dist.calculated",
-                         maxDistance:50*1000,
-                         spherical: true
-                    }
-                },
-                {
-                    $project:
-                    {
-                        _id:1,
-                        dist:1
-                    }
-                }
-            ],function(err,proceed){
-                if(err)
-                {
-                    return res.status(400).json({
-                        status:400,
-                        message:err.message
-                    });
-                }
-                else if(proceed)
-                {  
-                    console.log("err",proceed);                  
-                    // cibo.users.aggregate([
-                    //     {
-                    //         $match:
-                    //         {
-                    //           "seller":true
-                    //         }
-                    //     },
-                    //     {                
-                    //     $lookup:
-                    //     {
-                    //         from:"items",
-                    //         let:
-                    //         {
-                    //             id : "$_id"
-                    //         },
-                    //         pipeline:[
-                    //             {
-                    //                 $match:
-                    //                 {
-                    //                   $expr:
-                    //                   {                                       
-                    //                         $eq: [ "$$id", "$seller_id" ]
-                                            
-                    //                   }
-                    //                 }
-                    //             },                                
-                    //         ],
-                    //         as:"cafe"
-                    //     }
-                    // },
-                    // {
-                    //     $project:
-                    //     {
-                    //         name:1,
-                    //         email:1,
-                    //         location:1,
-                    //         "cafe._id":1,
-                    //         "cafe.item_name":1,
-                    //         "cafe.picture":1,
-                    //         "cafe.price":1,
-                    //         "cafe.seller_id":1
-        
-                    //     }
-                    // }
-                    // ],function(err,success){
-                    //     if(err)
-                    //     {
-                    //         return res.status(400).json({
-                    //             status:400,
-                    //             message:err.message
-                    //         });
-                    //     }
-                    //     else if(success)
-                    //     {
-                    //        return res.status(200).json({
-                    //            status:200,
-                    //            data:success
-                    //        });
-                    //     }
-                    // });
-
-                }
-            });
-           
-           }
-       });
-   });
-
-   // new item 2 API
-   app.get('/newitem2',function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
-       cibo.users.findOne({_id:vary._id},function(err,result){
-           if(err)
-           {
-               return res.status(400).json({
-                   status:400,
-                   message:err.message
-               });
-           }
-           else if(result)
             {                
                 cibo.items.aggregate([
                     {
@@ -1221,7 +1155,7 @@
                                     $geoNear:
                                     {
                                         near:result.location,
-                                        distanceField:"dist.calculated",
+                                        distanceField:"dist.distance",
                                         maxDistance:150*1000,
                                         spherical: true
                                     }
@@ -1231,7 +1165,13 @@
                                     {
                                         $expr:
                                         {
-                                            $eq:["$$sellerid","$_id"]
+                                            $and:[
+                                                {
+                                                    $eq:["$$sellerid","$_id"]
+                                                },{
+                                                    $ne:["$$sellerid",mongoose.Types.ObjectId(vary._id)]
+                                                }                                           
+                                            ]
                                         }
                                     }
                                 }
@@ -1240,16 +1180,20 @@
                         }
                     },
                     {
-                        $project:
-                        {
-                            item_name:1,
-                            "seller.name":1,
-                            "seller.dist":1
-                        }
+                      $addFields:
+                      {
+                          distance:"$seller.dist.distance"
+                      }
                     },
                     {
-                        $unwind:"$seller"
-                    }
+                        $project:
+                        {
+                            picture:1,
+                            item_name:1,  
+                            distance:1                                         
+                        }
+                    }                    
+                   
                 ],function(err,success){
                     if(err)
                     {
@@ -1259,14 +1203,48 @@
                         });
                     }
                     else if(success)
-                    {
+                    {                       
                         return res.status(200).json({
                             status:200,
                             data:success
                         });
                     }
-                });
+                }).sort({_id:-1});
             }
+       });
+   });
+
+   // view favourite API
+   app.get('/view_favourite',function(req,res){
+       token=req.headers.authorization.split(' ')[1];
+       var vary=jwt.verify(token,'ram');
+       cibo.users.findOne({_id:vary._id},function(err,result){
+           if(err)
+           {
+               return res.status(400).json({
+                   status:400,
+                   message:err.message
+               });
+           }
+           else if(result)
+           {              
+               cibo.favourite.find({user_id:result._id},function(err,success){
+                   if(err)
+                   {
+                       return res.status(400).json({
+                           status:400,
+                           message:err.message
+                       });
+                   }
+                   else if(success)
+                   {
+                       return res.status(200).json({
+                           status:200,
+                           data:success
+                       });
+                   }
+               });
+           }
        });
    });
 
