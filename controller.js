@@ -81,23 +81,14 @@
         req.body.confirm_password=md(req.body.confirm_password);
             if(req.body.password==req.body.confirm_password)
             {
-                obj={
-                   // image:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,
+                obj={                   
                     name:req.body.name,
                     email:req.body.email,
                     password:req.body.password,
                     confirm_password:req.body.confirm_password,
                     phone_no:req.body.phone_no,
                     otp:otpgen.generate(6,{ digits:true, alphabets:false, upperCase: false, specialChars: false }),
-                    // location:{
-                    //     type:"Point",
-                    //     coordinates:[parseFloat(req.body.long),parseFloat(req.body.lat)]
-                    // },
-                    // lat:parseFloat(req.body.lat),
-                    // long:parseFloat(req.body.long),
-
-                }
-               
+                    }               
             console.log('object is',obj);
             cibo.users.create(obj,function(err,result){
                 if(err)
@@ -168,8 +159,7 @@
         }   
      }
     });
-  });
-        
+  });       
 
     // verifying OTP API
     app.post('/verify',function(req,res){
@@ -403,7 +393,14 @@
         {
             return res.status(400).json({
                 status:400,
-                message:err.message
+                message:"invalid password"
+            });
+        }
+        else if(maill.test(req.body.email)==false || req.body.email==' ' || req.body.email==null)
+        {
+            return res.status(400).json({
+                status:400,
+                message:"invalid email"
             });
         }
         else
@@ -455,7 +452,7 @@
     });
 
     // logout API
-    app.get('/logout',function(req,res){
+    app.get('/logout',midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
         console.log("token is",vary);
@@ -597,7 +594,7 @@
         });
     });
     // bank details API
-    app.post('/bank_detail',function(req,res){
+    app.post('/bank_detail',midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
         cibo.users.findOne({_id:vary._id},function(err,success){
@@ -687,7 +684,7 @@
     });
 
     // view items API
-    app.get('/viewitem',function(req,res){
+    app.get('/viewitem',midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
         cibo.users.findOne({_id:vary._id},function(err,result){
@@ -721,7 +718,7 @@
     });
 
     // order API
-    app.post('/order',function(req,res){
+    app.post('/order',midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
         cibo.users.findOne({_id:vary._id},function(err,result){
@@ -761,7 +758,7 @@
     });
 
     //favourite Items API
-    app.post('/favourite',function(req,res){
+    app.post('/favourite',midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
        
@@ -803,7 +800,7 @@
     });
 
     // edit profile API
-    app.post('/edit',profile.any(),function(req,res){
+    app.post('/edit',profile.any(),midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
         cibo.users.findOne({_id:vary._id},function(err,result){
@@ -918,7 +915,7 @@
    });
 
    // change password API
-   app.post('/change',function(req,res){
+   app.post('/change',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
        var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
@@ -996,7 +993,7 @@
    });
 
    // schedule API
-   app.post('/schedule',function(req,res){
+   app.post('/schedule',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
        var vary=jwt.verify(token,'ram');
        cibo.users.findOneAndUpdate({_id:vary._id},{schedule:req.body.schedule},function(err,result){
@@ -1018,7 +1015,7 @@
    });
 
    // Blog API
-   app.post('/blog',upload.any(),function(req,res){
+   app.post('/blog',upload.any(),midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
        var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
@@ -1059,7 +1056,7 @@
    });
 
    // get order API
-   app.get('/getorder',function(req,res){
+   app.get('/getorder',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
        var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
@@ -1127,7 +1124,7 @@
    });
 
    // new item API
-   app.get('/user_new_item',function(req,res){
+   app.get('/user_new_item',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
        var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
@@ -1215,7 +1212,7 @@
    });
 
    // view favourite API
-   app.get('/view_favourite',function(req,res){
+   app.get('/view_favourite',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
        var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){

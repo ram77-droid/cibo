@@ -40,8 +40,8 @@ var user_schema=new Schema({
     image:String,
   
     // seller details
-    pan_card_number:String,
-    adhar_number:String,
+    pan_card_number:{type:String, unique:true},
+    adhar_number:{type:String, unique:true},
     pan_card_image:String,
     adhar_card_image_front:String,
     adhar_card_image_back:String,
@@ -53,9 +53,9 @@ var user_schema=new Schema({
     },
     bank_details:
     {
-        account_number:Number,
+        account_number:{type:Number, unique:true},
         account_holder_name:String,
-        ifse_code:Number,
+        ifse_code:{type:String, unique:true},
         bank_name:String
     },
     delivery_option:
