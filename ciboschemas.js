@@ -71,7 +71,8 @@ var user_schema=new Schema({
             from:String,
             to:String
         }
-    }
+    },
+    seller:Boolean
 });
 
 // item schema
