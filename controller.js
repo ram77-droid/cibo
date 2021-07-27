@@ -16,7 +16,7 @@
     var pass= /^[0-9]{6,}$/;
     var phone=/^[0-9]{10}$/;
     var mongoose=require('mongoose');
-
+  
     app.use(express.static(__dirname));
     console.log("dirname:",__dirname);
     const storage=multer.diskStorage({
@@ -340,6 +340,11 @@
 
     // forget password API
     app.post('/forgetpassword',function(req,res){
+        // const cipher = crypto.createCipher('aes192','ram');  
+        // var encrypted = cipher.update(req.body.email, 'utf8', 'hex');  
+        // encrypted += cipher.final('hex');  
+        // console.log(encrypted);
+       
         if(mail.test(req.body.email)==false||req.body.email==''||req.body.email==null)
         {
             return res.status(400).json({
@@ -358,7 +363,7 @@
                     });
                 }
                 else if(result)
-                {                   
+                {                                    
                     var transport = nodemailer.createTransport({
                         host: "smtp.mailtrap.io",
                         port: 2525,
@@ -438,7 +443,7 @@
     });
 
     //password screen API
-    app.get('/pass',function(req,res){
+    app.get('/pass/mail',function(req,res){
         ejs.renderFile('./password.ejs',{},{},function(err,template){
             if(err)
             {
