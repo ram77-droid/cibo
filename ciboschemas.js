@@ -130,7 +130,9 @@ item_id:
     ref:'items'
 },
 quantity:Number,
-price:String
+price:String,
+google_id:String,
+facebook_id:String
 
 });
 

@@ -293,6 +293,7 @@
                 if(req.body.password==result.password)
                 {
                     obj1={
+                        type:req.body.type,
                             _id:result._id,
                             email:req.body.email,
                             phone_no:result.phone_no
