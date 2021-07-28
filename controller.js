@@ -16,7 +16,11 @@
     var pass= /^[0-9]{6,}$/;
     var phone=/^[0-9]{10}$/;
     var mongoose=require('mongoose');
-  
+    // var crypto=require('crypto');
+    // const algorithm = 'aes-256-cbc';
+    // const key = crypto.randomBytes(32);
+    // const iv = crypto.randomBytes(16);
+    
     app.use(express.static(__dirname));
     console.log("dirname:",__dirname);
     const storage=multer.diskStorage({
@@ -27,8 +31,8 @@
             callback(null,file.fieldname+'-'+ Date.now()+ path.extname(file.originalname));
         }
     });
-    const profile=multer({storage:storage});
-
+    const profile=multer({storage:storage});  
+     
     // sign up API
     app.post('/signup',function(req,res){
         cibo.users.findOne({$or:[
@@ -340,11 +344,7 @@
 
     // forget password API
     app.post('/forgetpassword',function(req,res){
-        // const cipher = crypto.createCipher('aes192','ram');  
-        // var encrypted = cipher.update(req.body.email, 'utf8', 'hex');  
-        // encrypted += cipher.final('hex');  
-        // console.log(encrypted);
-       
+        
         if(mail.test(req.body.email)==false||req.body.email==''||req.body.email==null)
         {
             return res.status(400).json({
@@ -363,7 +363,7 @@
                     });
                 }
                 else if(result)
-                {                                    
+                {                             
                     var transport = nodemailer.createTransport({
                         host: "smtp.mailtrap.io",
                         port: 2525,
@@ -372,7 +372,7 @@
                           pass: "8e629cdfa30baf"
                         }
                       });
-                      let url = '<a href="http://'+req.headers.host+'/pass'+'">http://'+req.headers.host+'/pass'+'</a>';
+                      let url = '<a href="http://'+req.headers.host+'/pass/'+'">http://'+req.headers.host+'/pass'+'</a>';
                       console.log("url",url);
                    
                        transport.sendMail({
@@ -386,6 +386,7 @@
                          status:200,
                          message:"link sent on your email"
                      });
+                     
     
                 }
             });
@@ -394,6 +395,7 @@
 
     // reset password API
     app.post('/resetpassword',function(req,res){
+        
         if(pass.test(req.body.password)==false || req.body.password==' '|| req.body.password==null)
         {
             return res.status(400).json({
@@ -401,7 +403,7 @@
                 message:"invalid password"
             });
         }
-        else if(maill.test(req.body.email)==false || req.body.email==' ' || req.body.email==null)
+        else if(mail.test(req.body.email)==false || req.body.email==' ' || req.body.email==null)
         {
             return res.status(400).json({
                 status:400,
@@ -443,7 +445,8 @@
     });
 
     //password screen API
-    app.get('/pass/mail',function(req,res){
+    app.get('/pass/:email',function(req,res){
+                  
         ejs.renderFile('./password.ejs',{},{},function(err,template){
             if(err)
             {
@@ -778,8 +781,7 @@
             else if(result)
             {
                 obj={
-                    item_id:req.body.item_id,
-                    seller_id:req.body.seller_id,
+                    item_id:req.body.item_id,                   
                     user_id:result._id,
                     status:req.body.status
                 }
@@ -1216,8 +1218,8 @@
        });
    });
 
-   // view favourite API
-   app.get('/view_favourite',midleware.check,function(req,res){
+   // view favourite 2 API
+   app.get('/view_favourite2',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
        var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
@@ -1231,6 +1233,73 @@
            else if(result)
            {              
                cibo.favourite.find({user_id:result._id},function(err,success){
+                   if(err)
+                   {
+                       return res.status(400).json({
+                           status:400,
+                           message:err.message
+                       });
+                   }
+                   else if(success)
+                   {
+                       return res.status(200).json({
+                           status:200,
+                           data:success
+                       });
+                   }
+               });
+           }
+       });
+   });
+
+   // view favourite API
+   app.get('/view_favourite',midleware.check,function(req,res){
+       token=req.headers.authorization.split(' ')[1];
+       var vary=jwt.verify(token,'ram');
+       cibo.users.findOne({_id:vary._id},function(err,result){
+           if(err)
+           {
+               return res.status(400).json({
+                   status:400,
+                   message:"error"+err.message
+               });
+           }
+           else if(result)
+           {
+               cibo.items.aggregate([
+                   {
+                       $lookup:
+                       {
+                           from:"favourites",
+                           let:{
+                               id:"$_id",
+                               userid:mongoose.Types.ObjectId(vary._id)
+                           },
+                           pipeline:[
+                               {
+                                   $match:
+                                   {
+                                       $expr:
+                                       {
+                                           $and:[
+                                               {
+                                                $eq:["$$id","$item_id"]  
+                                               },
+                                               {
+                                                   $eq:["$$userid","$user_id"]
+                                               }                                        
+                                           ]
+                                       }
+                                   }
+                               }
+                           ],
+                           as:"fav"
+                       }
+                   },
+                   {
+                       $unwind:"$fav"
+                   }
+               ],function(err,success){
                    if(err)
                    {
                        return res.status(400).json({
