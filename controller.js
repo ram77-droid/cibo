@@ -16,11 +16,7 @@
     var pass= /^[0-9]{6,}$/;
     var phone=/^[0-9]{10}$/;
     var mongoose=require('mongoose');
-    // var crypto=require('crypto');
-    // const algorithm = 'aes-256-cbc';
-    // const key = crypto.randomBytes(32);
-    // const iv = crypto.randomBytes(16);
-    
+       
     app.use(express.static(__dirname));
     console.log("dirname:",__dirname);
     const storage=multer.diskStorage({
@@ -324,7 +320,8 @@
                                 {
                                     return res.status(200).json({
                                             status:200,
-                                            message:"login successful 1"
+                                            message:"login successful 1",
+                                            token:token_result
                                         });
                                 }
                             });                      
@@ -1345,6 +1342,40 @@
                        return res.status(200).json({
                            status:200,
                            data:success
+                       });
+                   }
+               });
+           }
+       });
+   });
+
+   // delete favourite item API
+   app.post('/delete_item',midleware.check,function(req,res){
+       token=req.headers.authorization.split(' ')[1];
+       var vary=jwt.verify(token,'ram');
+       cibo.findOne({_id:vary._id},function(err,result){
+           if(err)
+           {
+               return res.status(400).json({
+                   status:200,
+                   message:err.message
+               });
+           }
+           else if(result)
+           {
+               cibo.favourite.deleteOne({item_id:req.body.itwm_id},function(err,success){
+                   if(err)
+                   {
+                       return res.status(400).json({
+                           status:400,
+                           message:err.message
+                       });
+                   }
+                   else if(success)
+                   {
+                       return res.status(200).json({
+                           status:200,
+                           message:"item deleted"
                        });
                    }
                });
