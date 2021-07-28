@@ -416,7 +416,7 @@
             {
                 req.body.password=md(req.body.password);
             req.body.confirm_password=md(req.body.confirm_password);
-                cibo.users.updateOne({email:req.body.email},{password:req.body.password,confirm_password:req.body.confirm_password},function(err,success){
+                cibo.users.findOneAndUpdate({email:req.body.email},{password:req.body.password,confirm_password:req.body.confirm_password},function(err,success){
                     if(err)
                     {
                         return res.status(400).json({
@@ -429,6 +429,13 @@
                         return res.status(200).json({
                             status:200,
                             message:"password reset"
+                        });
+                    }
+                    else
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:"email not found"
                         });
                     }
                 });
@@ -445,7 +452,7 @@
     });
 
     //password screen API
-    app.get('/pass/:email',function(req,res){
+    app.get('/pass',function(req,res){
                   
         ejs.renderFile('./password.ejs',{},{},function(err,template){
             if(err)
@@ -1216,41 +1223,7 @@
                 }).sort({_id:-1});
             }
        });
-   });
-
-   // view favourite 2 API
-   app.get('/view_favourite2',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
-       cibo.users.findOne({_id:vary._id},function(err,result){
-           if(err)
-           {
-               return res.status(400).json({
-                   status:400,
-                   message:err.message
-               });
-           }
-           else if(result)
-           {              
-               cibo.favourite.find({user_id:result._id},function(err,success){
-                   if(err)
-                   {
-                       return res.status(400).json({
-                           status:400,
-                           message:err.message
-                       });
-                   }
-                   else if(success)
-                   {
-                       return res.status(200).json({
-                           status:200,
-                           data:success
-                       });
-                   }
-               });
-           }
-       });
-   });
+   });  
 
    // view favourite API
    app.get('/view_favourite',midleware.check,function(req,res){
@@ -1298,7 +1271,67 @@
                    },
                    {
                        $unwind:"$fav"
-                   }
+                   },
+                   {
+                    $lookup:
+                    {
+                        from:"users",
+                        let:
+                        {
+                            sellerid:"$seller_id"
+                        },
+                        pipeline:
+                        [                                
+                            {
+                                $geoNear:
+                                {
+                                    near:result.location,
+                                    distanceField:"dist.distance",
+                                    maxDistance:150*1000,
+                                    spherical: true
+                                }
+                            },
+                            {
+                                $match:
+                                {
+                                    $expr:
+                                    {
+                                        $and:[
+                                            {
+                                                $eq:["$$sellerid","$_id"]
+                                            },{
+                                                $ne:["$$sellerid",mongoose.Types.ObjectId(vary._id)]
+                                            }                                           
+                                        ]
+                                    }
+                                }
+                            }
+                        ],
+                        as:"seller"                            
+                    }
+                },
+                {
+                   $unwind:"$seller"
+                },
+                {
+                    $addFields:
+                    {
+                        seller_name:"$seller.name",
+                        distance:"$seller.dist.distance"
+                    }
+
+                },
+                {
+                    $project:
+                    {
+                        picture:1,
+                        item_name:1,
+                        price:1,
+                        seller_name:1,
+                       // "seller.name":1,
+                       distance:1
+                    }
+                }
                ],function(err,success){
                    if(err)
                    {
