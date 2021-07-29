@@ -30,23 +30,26 @@
     const profile=multer({storage:storage});  
      
     // sign up API
-    app.post('/signup',function(req,res){
+    app.post('/signup',function(req,res){       
         cibo.users.findOne({$or:[
             {email:req.body.email},
             {phone_no:req.body.phone_no}
         ]},function(err,success){
+           
             if(err)
             {
                 return res.status(400).json({
                     status:400,
-                    message:"error"
+                    message:"error",
+                    error:err
                 });
             }
             else if(success)
-            {
+            {               
                 return res.status(400).json({
                     status:400,
-                    message:"email or phone_no already exist"
+                    message:"email or phone_no already exist", 
+                   
                 });
             }
             // validations
@@ -56,14 +59,16 @@
                     {
                         return res.status(400).json({
                             status:400,
-                            message:"email is not valid"
+                            message:"email is not valid",
+                            error:err
                         });
                     }
         else if(pass.test(req.body.password)==false||req.body.password==''||req.body.password==null)
         {
             return res.status(400).json({
                 status:400,
-                message:"password should be minimum of 6 "
+                message:"password should be minimum of 6 ",
+                error:err
             });
         }
 
@@ -71,7 +76,29 @@
         {
             return res.status(400).json({
                 status:400,
-                message:"phone_no should be of 10 digit"
+                message:"phone_no should be of 10 digit",
+                error:err
+            });
+        }
+        else if(req.body.name==' '|| req.body.name==null)
+        {
+            return res.status(400).json({
+                status:400,
+                message:"enter valid name"
+            });
+        }
+        else if(req.body.password==' '|| req.body.password==null)
+        {
+            return res.status(400).json({
+                status:400,
+                message:"enter valid password"
+            });
+        }
+        else if(req.body.confirm_password==' '|| req.body.confirm_password==null)
+        {
+            return res.status(400).json({
+                status:400,
+                message:"enter valid password"
             });
         }
        
@@ -95,7 +122,7 @@
                 {
                     return res.status(400).json({
                         status:400,
-                        message:err.message
+                        message:err
                     });
                 }  
                 else if(result)
@@ -328,7 +355,7 @@
                                 {
                                     return res.status(400).json({
                                         status:400,
-                                        message:err.message
+                                        message:err
                                     });
                                 }
                                 else if(result)
