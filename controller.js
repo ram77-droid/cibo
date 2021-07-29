@@ -13,7 +13,7 @@
     var ejs=require('ejs');
     var midleware=require('./tokenverify.js');
     var mail= /^[a-zA-Z0-9_\-]+[@][a-z]+[\.][a-z]{2,3}$/;
-    var pass= /^[0-9]{6,}$/;
+    var pass= /^[a-zA-Z0-9]{6,}$/;
     var phone=/^[0-9]{10}$/;
     var mongoose=require('mongoose');
        
@@ -44,8 +44,8 @@
             }
             else if(success)
             {
-                return res.status(200).json({
-                    status:200,
+                return res.status(400).json({
+                    status:400,
                     message:"already exist"
                 });
             }
@@ -279,6 +279,20 @@
     // login API
     app.post('/login',function(req,res){
         obj=req.body;
+        if(mail.test(req.body.email)==false || req.body.email==' ' || req.body.email==null)
+        {
+            return res.status(400).json({
+                status:400,
+                message:"enter valid email"
+            });
+        }
+        else if(pass.test(req.body.password)==false || req.body.password==' ' || req.body.password==null)
+        {
+            return res.status(400).json({
+                status:400,
+                message:"enter valid password"
+            });
+        }
         req.body.password=md(req.body.password);
         cibo.users.findOne({email:req.body.email},function(err,result){
             if(err)
@@ -336,7 +350,14 @@
                         message:"password not match"
                     });
                 }                
-            }           
+            }  
+            else
+            {
+                return res.status(400).json({
+                    status:400,
+                    message:"email not found"
+                });
+            }         
         });
     });
 
@@ -1189,6 +1210,9 @@
                         }
                     },
                     {
+                        $unwind:"$seller"
+                    },
+                    {
                       $addFields:
                       {
                           distance:"$seller.dist.distance"
@@ -1222,6 +1246,167 @@
             }
        });
    });  
+
+   // add_to_cart API
+   app.post('/add_cart',midleware.check,function(req,res){
+       token=req.headers.authorization.split(' ')[1];
+       var vary=jwt.verify(token,'ram');
+       cibo.users.findOne({_id:vary._id},function(err,result){
+           if(err)
+           {
+               return res.status(400).json({
+                   status:400,
+                   message:err.message
+               });
+           }
+           else if(result)
+           {
+               cibo.cart.findOne({item_id:req.body.item_id},function(err,result){
+                   if(err)
+                   {
+                       return res.status(400).json({
+                           status:400,
+                           message:err.message
+                       });
+                   }
+                   else if(result)
+                   {
+                       return res.status(400).json({
+                           status:400,
+                           message:"item exists already"
+                       });
+                   }
+                   else
+                   {
+                        obj={
+                            item_id:req.body.item_id,
+                            seller_id:req.body.seller_id,
+                            seller_name:req.body.seller_name,
+                            picture:req.body.picture,
+                            user_id:result._id,
+                            item_name:req.body.item_name,
+                            price:"Rs"+" "+req.body.price,
+                            quantity:req.body.quantity,
+                            total_pay:"Rs"+" "+req.body.quantity*req.body.price
+                        }
+                     cibo.cart.create(obj,function(err,success){
+                         if(err)
+                            {
+                                return res.status(400).json({
+                                    status:400,
+                                    message:err.message
+                                });
+                            }
+                            else if(success)
+                            {
+                                return res.status(200).json({
+                                    status:200,
+                                    message:"item added to cart"
+                                });
+                            }
+                      });
+                   }
+               });             
+           }
+       });
+   });
+
+   // view only item API
+   app.get('/only_item',midleware.check,function(req,res){
+    token=req.headers.authorization.split(' ')[1];
+    var vary=jwt.verify(token,'ram');
+    cibo.users.findOne({_id:vary._id},function(err,result){
+        if(err)
+        {
+            return res.status(400).json({
+                status:400,
+                message:err.message
+            });
+        }
+        else if(result)
+         {                
+             cibo.items.aggregate([
+                 {
+                     $lookup:
+                     {
+                         from:"users",
+                         let:
+                         {
+                             sellerid:"$seller_id",
+                             id:"$_id"
+                         },
+                         pipeline:
+                         [                                
+                             {
+                                 $geoNear:
+                                 {
+                                     near:result.location,
+                                     distanceField:"dist.distance",
+                                     maxDistance:150*1000,
+                                     spherical: true
+                                 }
+                             },
+                             {
+                                 $match:
+                                 {
+                                     $expr:
+                                     {
+                                         $and:[
+                                             {
+                                                 $eq:["$$sellerid","$_id"]
+                                             },{
+                                                 $eq:["$$id",mongoose.Types.ObjectId("60ff9b8c6a90c61adc1587fd")]
+                                             }                                           
+                                         ]
+                                     }
+                                 }
+                             }
+                         ],
+                         as:"seller"                            
+                     }
+                 },
+                 {
+                     $unwind:"$seller"
+                 },
+                 {
+                   $addFields:
+                   {
+                       seller_id:"$seller._id",
+                       distance:"$seller.dist.distance",
+                       seller_name:"$seller.name"
+                   }
+                 },
+                 {
+                     $project:
+                     {
+                         picture:1,
+                         item_name:1, 
+                         price:1, 
+                         seller_id:1,
+                         seller_name:1,
+                         distance:1                                         
+                     }
+                 }                    
+                
+             ],function(err,success){
+                 if(err)
+                 {
+                     return res.status(400).json({
+                         status:400,
+                         message:err.message
+                     });
+                 }
+                 else if(success)
+                 {                       
+                     return res.status(200).json({
+                         status:200,
+                         data:success
+                     });
+                 }
+             }).sort({_id:-1});
+         }
+    });
+   });
 
    // view favourite API
    app.get('/view_favourite',midleware.check,function(req,res){

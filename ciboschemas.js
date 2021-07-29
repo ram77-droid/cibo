@@ -72,7 +72,9 @@ var user_schema=new Schema({
             to:String
         }
     },
-    seller:Boolean
+    seller:Boolean,
+    google_id:String,
+    facebook_id:String
 });
 
 // item schema
@@ -131,10 +133,34 @@ item_id:
 },
 quantity:Number,
 price:String,
-google_id:String,
-facebook_id:String
-
+total_pay:Number
 });
+
+// add cart schema
+var cart_schema= new Schema({
+    seller_id:
+    {
+        type:mongoose.Types.ObjectId,
+        ref:"users"
+    },
+    user_id:
+    {
+        type:mongoose.Types.ObjectId,
+        ref:'users'
+    },
+    item_id:
+    {
+        type:mongoose.Types.ObjectId,
+        ref:'items'
+    },
+    item_name:String,
+    picture:String,
+    seller_name:String,
+    quantity:String,
+    price:String,
+   total_pay:String
+    
+    });
 
 // blog schema
 var blog_schema=new Schema({
@@ -197,6 +223,9 @@ module.exports.favourite=favourite;
 
 var order=mongoose.model('orders',order_schema);
 module.exports.order=order;
+
+var cart=mongoose.model('carts',cart_schema);
+module.exports.cart=cart;
 
 var blog=mongoose.model('blogs',blog_schema);
 module.exports.blog=blog;
