@@ -39,14 +39,14 @@
             {
                 return res.status(400).json({
                     status:400,
-                    message:err.message
+                    message:"error"
                 });
             }
             else if(success)
             {
                 return res.status(400).json({
                     status:400,
-                    message:"already exist"
+                    message:"email or phone_no already exist"
                 });
             }
             // validations
