@@ -14,7 +14,7 @@
     var midleware=require('./tokenverify.js');
     var mail= /^[a-zA-Z0-9_\-]+[@][a-z]+[\.][a-z]{2,3}$/;
     var pass= /^[a-zA-Z0-9]{6,}$/;
-    var phone=/^[0-9]{10}$/;
+    var phone=/^[89][0-9]{9}$/;
     var mongoose=require('mongoose');
        
     app.use(express.static(__dirname));
@@ -41,34 +41,42 @@
                 return res.status(400).json({
                     status:400,
                     message:"error",
-                    error:err
+                   
                 });
             }
             else if(success)
             {               
                 return res.status(400).json({
                     status:400,
-                    message:"email or phone_no already exist", 
-                   
+                    message:"email or phone_no already exist",   
+                    error:true                 
                 });
             }
             // validations
             else 
             {
-                if(mail.test(req.body.email)==false||req.body.email==''||req.body.email==null)
+                if(req.body.name==null || req.body.email==null || req.body.password==null || req.body.confirm_password==null || req.body.phone_no==null)
+                {
+                    return res.status(400).json({
+                        status:400,
+                        message:"fill all fields",
+                        error:true
+                    });
+                }
+                else if(mail.test(req.body.email)==false||req.body.email==''||req.body.email==null)
                     {
                         return res.status(400).json({
                             status:400,
-                            message:"email is not valid",
-                            error:err
+                            message:"enter valid email",
+                            error:true 
                         });
                     }
         else if(pass.test(req.body.password)==false||req.body.password==''||req.body.password==null)
         {
             return res.status(400).json({
                 status:400,
-                message:"password should be minimum of 6 ",
-                error:err
+                message:"password should be minimum of lenght 6 ",
+                error:true 
             });
         }
 
@@ -76,29 +84,32 @@
         {
             return res.status(400).json({
                 status:400,
-                message:"phone_no should be of 10 digit",
-                error:err
+                message:"phone_no should be of 10 digit and must start with 8 or 9",
+                error:true 
             });
         }
-        else if(req.body.name==' '|| req.body.name==null)
+        else if(req.body.name==''|| req.body.name==null || req.body.name==' ')
         {
             return res.status(400).json({
                 status:400,
-                message:"enter valid name"
+                message:"enter valid name",
+                error:true 
             });
         }
         else if(req.body.password==' '|| req.body.password==null)
         {
             return res.status(400).json({
                 status:400,
-                message:"enter valid password"
+                message:"enter valid password",
+                error:true 
             });
         }
         else if(req.body.confirm_password==' '|| req.body.confirm_password==null)
         {
             return res.status(400).json({
                 status:400,
-                message:"enter valid password"
+                message:"enter valid password",
+                error:true 
             });
         }
        
