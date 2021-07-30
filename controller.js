@@ -449,9 +449,7 @@
                      return res.status(200).json({
                          status:200,
                          message:"link sent on your email"
-                     });
-                     
-    
+                     });                   
                 }
             });
         }       
@@ -516,8 +514,7 @@
     });
 
     //password screen API
-    app.get('/pass',function(req,res){
-                  
+    app.get('/pass',function(req,res){                  
         ejs.renderFile('./password.ejs',{},{},function(err,template){
             if(err)
             {
@@ -550,15 +547,13 @@
                     message:"you just logout"
                 });
             }
-        })
+        });
     });
 
     // seller API
     app.post('/becomeseller',profile.any(),midleware.check,function(req,res){
-
         token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'ram');
-       
+        var vary=jwt.verify(token,'ram');       
         cibo.users.findOne({_id:vary._id},function(err,result){
             if(err)
             {
@@ -569,7 +564,6 @@
             }
             else if(result)
             {               
-                
                 if(req.body.delivery_option==null)
                 {  
                     if(req.body.pan_card_number.length!=10)
