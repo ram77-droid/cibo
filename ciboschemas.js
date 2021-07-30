@@ -186,6 +186,11 @@ var payment_schema=new Schema({
         type:mongoose.Types.ObjectId,
         ref:'users'
     },
+    item_id:
+    {
+      type:mongoose.Types.ObjectId,
+      ref:"items"
+    },
     card_type:String,
     card_number:Number,
     validate_date:Date

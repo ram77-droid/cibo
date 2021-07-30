@@ -13,7 +13,7 @@
     var ejs=require('ejs');
     var midleware=require('./tokenverify.js');
     var mail= /^[a-zA-Z0-9_\-]+[@][a-z]+[\.][a-z]{2,3}$/;
-    var pass= /^[a-zA-Z0-9]{6,}$/;
+    var pass= /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
     var phone=/^[89][0-9]{9}$/;
     var mongoose=require('mongoose');
        
@@ -143,7 +143,8 @@
                             _id:result._id,
                             name:result.name,
                             email:result.email,
-                            phone_no:result.phone_no
+                            phone_no:result.phone_no,
+                            otp:result.otp
                         }
                     jwt.sign(obj1,'ram',function(token_error,token_result){
                         if(token_error)
@@ -181,7 +182,8 @@
                     {
                         return res.status(400).json({
                             status:400,
-                            message:"something wrong"
+                            message:"something wrong",
+                            error:true
                         });
                     }
             });          
@@ -191,7 +193,8 @@
             {
                 return res.status(400).json({
                     status:400,
-                    message:"password is not matching with confirm password"
+                    message:"password is not matching with confirm password",
+                    error:true
                 });
             }
         }   
@@ -321,14 +324,16 @@
         {
             return res.status(400).json({
                 status:400,
-                message:"enter valid email"
+                message:"enter valid email",
+                error:true
             });
         }
         else if(pass.test(req.body.password)==false || req.body.password==' ' || req.body.password==null)
         {
             return res.status(400).json({
                 status:400,
-                message:"enter valid password"
+                message:"enter valid password",
+                error:true
             });
         }
         req.body.password=md(req.body.password);
@@ -385,7 +390,8 @@
                 {
                     return res.status(400).json({
                         status:400,
-                        message:"password not match"
+                        message:"password not match",
+                        error:true
                     });
                 }                
             }  
@@ -393,7 +399,8 @@
             {
                 return res.status(400).json({
                     status:400,
-                    message:"email not found"
+                    message:"email not found",
+                    error:true
                 });
             }         
         });
@@ -549,20 +556,6 @@
     // seller API
     app.post('/becomeseller',profile.any(),midleware.check,function(req,res){
 
-         if(req.body.pan_card_number.length!=10)
-        {
-            return res.status(400).json({
-                status:400,
-                message:"enter correct pan card number"
-            });
-        }
-        else if(req.body.adhar_number.length!=12)
-        {
-            return res.status(400).json({
-                status:400,
-                message:"enter correct adhar card number"
-            });
-        }
         token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
        
@@ -578,7 +571,21 @@
             {               
                 
                 if(req.body.delivery_option==null)
-                {                   
+                {  
+                    if(req.body.pan_card_number.length!=10)
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:"enter correct pan card number"
+                        });
+                    }
+                    else if(req.body.adhar_number.length!=12)
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:"enter correct adhar card number"
+                        });
+                    }                 
                     if(req.files.length!=4)
                     {
                         return res.status(400).json({
