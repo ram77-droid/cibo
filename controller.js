@@ -55,7 +55,8 @@
             // validations
             else 
             {
-                if(req.body.name==null || req.body.email==null || req.body.password==null || req.body.confirm_password==null || req.body.phone_no==null)
+                if(req.body.name==null || req.body.email==null || req.body.password==null || req.body.confirm_password==null || req.body.phone_no==null
+                    || req.body.name==''||req.body.email==''|| req.body.password==''|| req.body.confirm_password==''||req.body.phone_no=='')
                 {
                     return res.status(400).json({
                         status:400,
