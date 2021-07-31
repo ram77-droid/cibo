@@ -132,6 +132,7 @@
             cibo.users.create(obj,function(err,result){
                 if(err)
                 {
+                    console.log("error:",err);
                     return res.status(400).json({
                         status:400,
                         message:err
