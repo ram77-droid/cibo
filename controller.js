@@ -18,18 +18,39 @@
     var mongoose=require('mongoose');
     var cors=require('cors');
     app.use(cors());
+    var dotenv=require('dotenv');
+    dotenv.config();
        
     app.use(express.static(__dirname));
     console.log("dirname:",__dirname);
-    const storage=multer.diskStorage({
-        destination:function(req,file,callback){
-            callback(null,__dirname+'/users_pictures');
-        },
-        filename:function(req,file,callback){
-            callback(null,file.fieldname+'-'+ Date.now()+ path.extname(file.originalname));
-        }
+
+    const AWS = require('aws-sdk');
+    const multers3 = require('multer-s3');
+    const s3 = new AWS.S3({
+    accessKeyId:process.env.AWS_ACCESS_KEY,
+    secretAccessKey:process.env.AWS_SECRET_ACCESS_KEY
     });
-    const profile=multer({storage:storage});  
+    
+    const fileFilter = (req, file, cb) => {
+    if (file.mimetype === "image/jpeg" || file.mimetype === "image/png" || file.mimetype === "image/jpg") {
+    cb(null, true);
+    } else {
+    cb(new Error("Invalid file type, only JPEG and PNG is allowed!"), false);
+    }
+    };
+    const profile = multer({fileFilter,storage: multers3({
+    acl: "public-read",
+    s3,
+    bucket: process.env.AWSBucketName,
+    metadata: function (req, file, cb) {
+    cb(null, { fieldName: "TESTING_METADATA" });
+    },
+    contentType: multers3.AUTO_CONTENT_TYPE,
+    key: function (req, file, cb) {
+    cb(null, Date.now().toString()+path.extname(file.originalname));
+    },
+    }),
+    });
      
     // sign up API
     app.post('/signup',function(req,res){       
@@ -636,7 +657,7 @@
             {               
                 if(req.body.delivery_option==null)
                 {  
-                    if(req.body.pan_card_number.length!=10)
+                    if(req.body.pan_card_number?.length!=10)
                     {
                         return res.status(400).json({
                             status:400,
@@ -662,22 +683,22 @@
                     {                      
                         if(req.files[i].fieldname=="image")
                         {
-                            image=req.files[i].filename;
+                            image=req.files[i].location;
                            // console.log("image:",image);
                         }
                         else if(req.files[i].fieldname=="pan_card_image")
                         {
-                            pan_card_image=req.files[i].filename;
+                            pan_card_image=req.files[i].location;
                             //console.log("pan:",pan_card_image);
                         }
                         else if(req.files[i].fieldname=="adhar_card_image_front")
                         {
-                            adhar_card_image_front=req.files[i].filename;
+                            adhar_card_image_front=req.files[i].location;
                            // console.log("adhar front:",adhar_card_image_front);
                         }
                         else if(req.files[i].fieldname=="adhar_card_image_back")
                         {
-                            adhar_card_image_back=req.files[i].filename;
+                            adhar_card_image_back=req.files[i].location;
                            // console.log("adhar back:",adhar_card_image_back);
                         }
                     }
@@ -782,7 +803,7 @@
         }
     });
     const upload=multer({storage:store});
-    app.post('/items',upload.any(),midleware.check,function(req,res){        
+    app.post('/items',profile.any(),midleware.check,function(req,res){        
         token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
         cibo.users.findOne({_id:vary._id},function(err,result){
@@ -798,7 +819,7 @@
                 obj=
                 {
                     seller_id:result._id,
-                    picture:req.files[0].filename,
+                    picture:req.files[0].location,
                     item_name:req.body.item_name,
                     item_category:req.body.item_category,
                     price:"Rs "+req.body.price,
@@ -1017,7 +1038,7 @@
                }
                else
                {
-                cibo.users.updateOne({_id:vary._id},{image:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no,bio:req.body.bio},function(err,success){
+                cibo.users.updateOne({_id:vary._id},{image:req.files[0].location,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no,bio:req.body.bio},function(err,success){
               
                     if(err)
                     {
@@ -1035,7 +1056,7 @@
                     }
                  });                           
                }  
-               cibo.users.updateOne({_id:vary._id},{image:'http://192.168.1.20:5000/users_pictures/'+req.files[0].filename,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no,bio:req.body.bio},function(err,success){
+               cibo.users.updateOne({_id:vary._id},{image:req.files[0].location,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no,bio:req.body.bio},function(err,success){
                 if(err)
                 {
                     return res.status(400).json({
@@ -1157,7 +1178,7 @@
    });
 
    // Blog API
-   app.post('/blog',upload.any(),midleware.check,function(req,res){
+   app.post('/blog',profile.any(),midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
        var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
@@ -1172,7 +1193,7 @@
            {
                obj=
                {
-                   pictures:req.files[0].filename,
+                   pictures:req.files[0].location,
                    user_id:result._id,
                    title:req.body.title,
                    description:req.body.description
