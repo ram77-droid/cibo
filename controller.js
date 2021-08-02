@@ -791,18 +791,7 @@
         });      
     });
 
-    // items API   
-    app.use(express.static(__dirname));
-   // console.log("dirname:",__dirname);
-    const store=multer.diskStorage({
-        destination:function(req,file,callback){
-            callback(null,__dirname+'/item_pictures');
-        },
-        filename:function(req,file,callback){
-            callback(null,file.fieldname+'-'+ Date.now()+ path.extname(file.originalname));
-        }
-    });
-    const upload=multer({storage:store});
+    // items API      
     app.post('/items',profile.any(),midleware.check,function(req,res){        
         token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
