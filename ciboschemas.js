@@ -49,7 +49,7 @@ var user_schema=new Schema({
         street_name:String,
         city:String,
         state:String,
-        pin:Number
+        pin:String
     },
     bank_details:
     {
