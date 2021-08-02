@@ -16,6 +16,8 @@
     var pass= /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
     var phone=/^[89][0-9]{9}$/;
     var mongoose=require('mongoose');
+    var cors=require('cors');
+    app.use(cors());
        
     app.use(express.static(__dirname));
     console.log("dirname:",__dirname);
@@ -348,62 +350,128 @@
                 });
             }
             else if(result)
-            {    
-                if(req.body.password==result.password)
+            {  
+                if(result.token!=null)
                 {
-                    obj1={
-                        type:req.body.type,
-                            _id:result._id,
-                            email:req.body.email,
-                            phone_no:result.phone_no
-                         }
-                    jwt.sign(obj1,'ram',function(token_error,token_result)
+                    return res.status(200).json({
+                        status:200,
+                        message:"user already logged in"                       
+                    });
+                }                          
+                else
+                {
+                    if(req.body.password==result.password)
                     {
-                        if(token_error)
+                        obj1={
+                            type:req.body.type,
+                                _id:result._id,
+                                email:req.body.email,
+                                phone_no:result.phone_no                                
+                             }
+                        jwt.sign(obj1,'ram',function(token_error,token_result)
+                        {
+                            if(token_error)
+                            {
+                                return res.status(400).json({
+                                    status:400,
+                                    message:token_error.message
+                                });
+                            }
+                            else if(token_result)
+                            {
+                                cibo.users.updateOne({email:req.body.email},{token:token_result},function(err,result){
+                                    if(err)
+                                    {
+                                        return res.status(400).json({
+                                            status:400,
+                                            message:err
+                                        });
+                                    }
+                                    else if(result)
+                                    {
+                                        return res.status(200).json({
+                                                status:200,
+                                                message:"login successful 1",
+                                                token:token_result
+                                            });
+                                    }
+                                });                      
+                            }
+                        });
+                    }                                                        
+                    else
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:"password not match",
+                            error:true
+                        });
+                    } 
+                }                               
+            }  
+            else
+            {                
+                if(req.body.type=="google" || req.body.type=="facebook")
+                {
+                    cibo.users.create(req.body,function(err,result){
+                        if(err)
                         {
                             return res.status(400).json({
                                 status:400,
-                                message:token_error.message
+                                message:err.message
                             });
                         }
-                        else if(token_result)
+                        else if(result)
                         {
-                            cibo.users.updateOne({email:req.body.email},{token:token_result},function(err,result){
-                                if(err)
+                            // return res.status(200).json({
+                            //     status:200,
+                            //     message:"user logined"
+                            // });
+                            obj={
+                                _id:result._id,
+                                email:result.email,
+                                google_id:result.google_id
+                            }
+                            jwt.sign(obj,'ram',function(token_error,token_result){
+                                if(token_error)
                                 {
                                     return res.status(400).json({
                                         status:400,
                                         message:err
                                     });
                                 }
-                                else if(result)
+                                else if(token_result)
                                 {
-                                    return res.status(200).json({
-                                            status:200,
-                                            message:"login successful 1",
-                                            token:token_result
-                                        });
+                                    cibo.users.updateOne({email:req.body.email},{token:token_result},function(err,result){
+                                        if(err)
+                                        {
+                                            return res.status(400).json({
+                                                status:400,
+                                                message:err
+                                            });
+                                        }
+                                        else if(result)
+                                        {
+                                            return res.status(200).json({
+                                                    status:200,
+                                                    message:"login successful 1",
+                                                    token:token_result
+                                                });
+                                        }
+                                    });  
                                 }
-                            });                      
+                            });
                         }
                     });
-                }                                                        
+                } 
                 else
                 {
                     return res.status(400).json({
-                        status:400,
-                        message:"password not match",
-                        error:true
-                    });
-                }                
-            }  
-            else
-            {
-                return res.status(400).json({
                     status:400,
                     message:"email not found",
                     error:true
                 });
+                }
             }         
         });
     });

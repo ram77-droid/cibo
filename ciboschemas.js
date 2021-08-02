@@ -73,6 +73,7 @@ var user_schema=new Schema({
         }
     },
     seller:Boolean,
+    type:String,
     google_id:String,
     facebook_id:String
 });
