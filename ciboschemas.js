@@ -8,12 +8,13 @@ var user_schema = new Schema({
     email:
     {
         type: String,
-        unique: true
+        unique: true,sparse:true
     },
     phone_no:
     {
         type: Number,
-        unique: true
+        unique: true,
+        sparse:true
     },
     password: String,
     confirm_password: String,
@@ -53,9 +54,9 @@ var user_schema = new Schema({
     },
     bank_details:
     {
-        account_number: { type: Number, unique: true },
+        account_number: { type: Number, unique: true, sparse:true },
         account_holder_name: String,
-        ifse_code: { type: String, unique: true },
+        ifse_code: { type: String, unique: true, sparse:true },
         bank_name: String
     },
     delivery_option:
