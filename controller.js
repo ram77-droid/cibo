@@ -12,7 +12,7 @@
     var nodemailer=require('nodemailer');
     var ejs=require('ejs');
     var midleware=require('./tokenverify.js');
-    var mail= /^[a-zA-Z0-9_\-]+[@][a-z]+[\.][a-z]{2,3}$/;
+    var mail= /^[a-zA-Z0-9_\-\.]+[@][a-z]+[\.][a-z]{2,3}$/;
     var pass= /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
     var phone=/^[89][0-9]{9}$/;
     var mongoose=require('mongoose');
@@ -21,8 +21,8 @@
     var dotenv=require('dotenv');
     dotenv.config();
        
-    app.use(express.static(__dirname));
-    console.log("dirname:",__dirname);
+    // app.use(express.static(__dirname));
+    // console.log("dirname:",__dirname);
 
     const AWS = require('aws-sdk');
     const multers3 = require('multer-s3');
@@ -371,64 +371,104 @@
                 });
             }
             else if(result)
-            {  
-                if(result.token!=null)
+            {                  
+                if(req.body.password==result.password)
                 {
-                    return res.status(200).json({
-                        status:200,
-                        message:"user already logged in"                       
+                    obj1={
+                        type:req.body.type,
+                            _id:result._id,
+                            email:req.body.email,
+                            phone_no:result.phone_no                                
+                         }
+                    jwt.sign(obj1,'ram',function(token_error,token_result)
+                    {
+                        if(token_error)
+                        {
+                            return res.status(400).json({
+                                status:400,
+                                message:token_error.message
+                            });
+                        }
+                        else if(token_result)
+                        {
+                            cibo.users.updateOne({email:req.body.email},{token:token_result},function(err,result){
+                                if(err)
+                                {
+                                    return res.status(400).json({
+                                        status:400,
+                                        message:err
+                                    });
+                                }
+                                else if(result)
+                                {
+                                    return res.status(200).json({
+                                            status:200,
+                                            message:"login successful 1",
+                                            token:token_result
+                                        });
+                                }
+                            });                      
+                        }
                     });
-                }                          
+                }                                                        
                 else
                 {
-                    if(req.body.password==result.password)
-                    {
-                        obj1={
-                            type:req.body.type,
-                                _id:result._id,
-                                email:req.body.email,
-                                phone_no:result.phone_no                                
-                             }
-                        jwt.sign(obj1,'ram',function(token_error,token_result)
-                        {
-                            if(token_error)
-                            {
-                                return res.status(400).json({
-                                    status:400,
-                                    message:token_error.message
-                                });
-                            }
-                            else if(token_result)
-                            {
-                                cibo.users.updateOne({email:req.body.email},{token:token_result},function(err,result){
-                                    if(err)
-                                    {
-                                        return res.status(400).json({
-                                            status:400,
-                                            message:err
-                                        });
-                                    }
-                                    else if(result)
-                                    {
-                                        return res.status(200).json({
-                                                status:200,
-                                                message:"login successful 1",
-                                                token:token_result
-                                            });
-                                    }
-                                });                      
-                            }
-                        });
-                    }                                                        
-                    else
-                    {
-                        return res.status(400).json({
-                            status:400,
-                            message:"password not match",
-                            error:true
-                        });
-                    } 
-                }                               
+                    return res.status(400).json({
+                        status:400,
+                        message:"password not match",
+                        error:true
+                    });
+                }                       
+                // else
+                // {
+                //     // if(req.body.password==result.password)
+                //     // {
+                //     //     obj1={
+                //     //         type:req.body.type,
+                //     //             _id:result._id,
+                //     //             email:req.body.email,
+                //     //             phone_no:result.phone_no                                
+                //     //          }
+                //     //     jwt.sign(obj1,'ram',function(token_error,token_result)
+                //     //     {
+                //     //         if(token_error)
+                //     //         {
+                //     //             return res.status(400).json({
+                //     //                 status:400,
+                //     //                 message:token_error.message
+                //     //             });
+                //     //         }
+                //     //         else if(token_result)
+                //     //         {
+                //     //             cibo.users.updateOne({email:req.body.email},{token:token_result},function(err,result){
+                //     //                 if(err)
+                //     //                 {
+                //     //                     return res.status(400).json({
+                //     //                         status:400,
+                //     //                         message:err
+                //     //                     });
+                //     //                 }
+                //     //                 else if(result)
+                //     //                 {
+                //     //                     return res.status(200).json({
+                //     //                             status:200,
+                //     //                             message:"login successful 1",
+                //     //                             token:token_result
+                //     //                         });
+                //     //                 }
+                //     //             });                      
+                //     //         }
+                //     //     });
+                //     // }                                                        
+                //     // else
+                //     // {
+                //     //     return res.status(400).json({
+                //     //         status:400,
+                //     //         message:"password not match",
+                //     //         error:true
+                //     //     });
+                //     // } 
+                // }                               
             }  
             else
             {                
@@ -475,7 +515,7 @@
                                         {
                                             return res.status(200).json({
                                                     status:200,
-                                                    message:"login successful 1",
+                                                    message:"login successful ",
                                                     token:token_result
                                                 });
                                         }
@@ -527,7 +567,7 @@
                           pass: "8e629cdfa30baf"
                         }
                       });
-                      let url = '<a href="http://'+req.headers.host+'/pass/'+'">http://'+req.headers.host+'/pass'+'</a>';
+                      let url = '<a href="http://'+req.headers.host+'/pass/'+req.body.email+'">http://'+req.headers.host+'/pass'+'</a>';
                       console.log("url",url);
                    
                        transport.sendMail({
@@ -542,12 +582,20 @@
                          message:"link sent on your email"
                      });                   
                 }
+                else 
+                {
+                    return res.status(400).json({
+                        status:400,
+                        message:"email not found"
+                    });
+                }
             });
         }       
     });
 
     // reset password API
-    app.post('/resetpassword',function(req,res){
+    app.post('/resetpassword:email',function(req,res){
+        console.log("email:",req.params.email);
         
         if(pass.test(req.body.password)==false || req.body.password==' '|| req.body.password==null)
         {
@@ -605,7 +653,7 @@
     });
 
     //password screen API
-    app.get('/pass',function(req,res){                  
+    app.get('/pass/:email',function(req,res){                  
         ejs.renderFile('./password.ejs',{},{},function(err,template){
             if(err)
             {
@@ -813,7 +861,8 @@
                     item_category:req.body.item_category,
                     price:"Rs "+req.body.price,
                     description:req.body.description,
-                    special_notes:req.body.special_notes
+                    special_notes:req.body.special_notes,
+                    active:req.body.active
                 }
                 cibo.items.create(obj,function(err,success){
                     if(err)
@@ -964,103 +1013,59 @@
                 });
             }
             else if(result)
-            {                
-               if(req.body.name==null && req.body.email==null && req.body.phone_no==null)
-               {
-                   req.body.name=result.name;
-                   req.body.email=result.email,
-                   req.body.phone_no=result.phone_no
-               }
-               else if(req.body.email==null && req.body.phone_no==null && req.body.image==null)
-               {
-                req.body.image=result.image;
-                req.body.email=result.email,
-                req.body.phone_no=result.phone_no
-               }
-               else if(req.body.image==null && req.body.name==null && req.body.phone_no==null)
-               {
-                   req.body.image=result.image;
-                   req.body.name=result.name;
-                   req.body.phone_no=result.phone_no;
-               }
-            else if(req.body.image=null && req.body.name==null && req.body.email==null)
-            {
-                req.body.image=result.image;
-                req.body.name=result.name;
-                req.body.email=result.email;
-            }
-               else if(req.body.email==null && req.body.phone_no==null)
-               {
-                req.body.email=result.email,
-                req.body.phone_no=result.phone_no
-               }
-               else if(req.body.name==null && req.body.image==null)
-               {
-                req.body.image=result.image;
-                req.body.name=result.name;
-               }
-               else if(req.body.name==null && req.body.email==null)
-               {
-                req.body.name=result.name;
-                req.body.email=result.email
-               }
-               else if(req.body.image==null && req.body.phone_no==null)
-               {
-                req.body.image=result.image;
-                req.body.phone_no=result.phone_no;
-               }
-               else if(req.body.name==null)
-               {
-                req.body.name=result.name;
-               }
-               else if(req.body.image==null)
-               {
-                req.body.image=result.image;
-               }
-               else if(req.body.email==null)
-               {
-                req.body.email=result.email;
-               }
-               else if(req.body.phone_no==null)
-               {
-                req.body.phone_no=result.phone_no;
-               }
-               else
-               {
-                cibo.users.updateOne({_id:vary._id},{image:req.files[0].location,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no,bio:req.body.bio},function(err,success){
-              
-                    if(err)
-                    {
-                        return res.status(400).json({
-                            status:400,
-                            message:err.message
-                        });
-                    }
-                    else if(success)
-                    {
-                        return res.status(200).json({
-                            status:200,
-                            message:"your profile updated"
-                        });
-                    }
-                 });                           
-               }  
-               cibo.users.updateOne({_id:vary._id},{image:req.files[0].location,name:req.body.name,email:req.body.email,phone_no:req.body.phone_no,bio:req.body.bio},function(err,success){
-                if(err)
+            {   
+                if(req.files)
                 {
-                    return res.status(400).json({
-                        status:400,
-                        message:err.message
+                    obj={
+                        name:req.body.name,
+                        image:req.files[0].location,
+                        email:req.body.email,
+                        phone_no:req.body.phone_no,
+                        bio:req.body.bio
+                    }
+                    cibo.users.updateOne({_id:result._id},obj,function(err,result){
+                        if(err)
+                        {
+                            return res.status(400).json({
+                                status:400,
+                                message:err.message
+                            });
+                        }
+                        else if(result)
+                        {
+                            return res.status(200).json({
+                                status:200,
+                                message:"profile updated"
+                            });
+                        }
                     });
-                }
-                else if(success)
+                }  
+                else
                 {
-                    return res.status(200).json({
-                        status:200,
-                        message:"your profile updated"
+                    obj={
+                        name:req.body.name,                       
+                        email:req.body.email,
+                        phone_no:req.body.phone_no,
+                        bio:req.body.bio
+                    }
+                    cibo.users.updateOne({_id:result._id},obj,function(err,result){
+                        if(err)
+                        {
+                            return res.status(400).json({
+                                status:400,
+                                message:err.message
+                            });
+                        }
+                        else if(result)
+                        {
+                            return res.status(200).json({
+                                status:200,
+                                message:"profile updated"
+                            });
+                        }
                     });
-                }
-            }); 
+                }       
+         
                    
         }
     });
@@ -1296,7 +1301,8 @@
                             from:"users",
                             let:
                             {
-                                sellerid:"$seller_id"
+                                sellerid:"$seller_id",
+                                active:"$active"
                             },
                             pipeline:
                             [                                
@@ -1319,6 +1325,9 @@
                                                     $eq:["$$sellerid","$_id"]
                                                 },{
                                                     $ne:["$$sellerid",mongoose.Types.ObjectId(vary._id)]
+                                                },
+                                                {
+                                                    $eq:["$$active",true]
                                                 }                                           
                                             ]
                                         }
@@ -1654,6 +1663,34 @@
        });
    });
 
+   // view profile API
+   app.get('/view_profile',midleware.check,function(req,res){
+       token=req.headers.authorization.split(' ')[1];
+       var vary=jwt.verify(token,'ram');
+       cibo.users.findOne({_id:vary._id},function(err,result){
+           if(err)
+           {
+               return res.status(400).json({
+                   status:400,
+                   message:err.message
+               });
+           }
+           else if(result)
+           {
+               obj={
+                   name:result.name,
+                   image:result.image,
+                   email:result.email,
+                   phone_no:result.phone_no
+               }
+               return res.status(200).json({
+                   status:200,
+                   data:obj
+               });
+           }
+       });
+   });
+
    // delete favourite item API
    app.post('/delete_item',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
@@ -1684,6 +1721,86 @@
                        });
                    }
                });
+           }
+       });
+   });
+
+   // edit item API
+   app.post('/edit_item',profile.any(),midleware.check,function(req,res){
+       token=req.headers.authorization.split(' ')[1];
+       var vary=jwt.verify(token,'ram');
+       cibo.users.findOne({_id:vary._id},function(err,result){
+           if(err)
+           {
+               return res.status(400).json({
+                   status:400,
+                   message:err.message
+               });
+           }
+           else if(result)
+           {
+               if(req.body.picture)
+               {
+                    obj=
+                    {
+                        seller_id:result._id,
+                        picture:req.files[0].location,
+                        item_name:req.body.item_name,
+                        item_category:req.body.item_category,
+                        price:"Rs "+req.body.price,
+                        description:req.body.description,
+                        special_notes:req.body.special_notes,
+                        active:req.body.active
+                    }               
+                    cibo.items.updateOne({seller_id:result._id,_id:mongoose.Types.ObjectId(req.body._id)},obj,function(err,result){
+                        if(err)
+                        {
+                            return res.status(400).json({
+                                status:400,
+                                message:err.message
+                            });
+                        }
+                        else if(result)
+                        {
+                            return res.status(200).json({
+                                status:200,
+                                message:"item updated",
+                                data:obj
+                            });
+                        }
+                    });
+               }
+               else
+               {
+                obj=
+                {
+                    seller_id:result._id,                   
+                    item_name:req.body.item_name,
+                    item_category:req.body.item_category,
+                    price:"Rs "+req.body.price,
+                    description:req.body.description,
+                    special_notes:req.body.special_notes,
+                    active:req.body.active
+                }               
+                cibo.items.updateOne({seller_id:result._id,_id:mongoose.Types.ObjectId(req.body._id)},obj,function(err,result){
+                    if(err)
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:err.message
+                        });
+                    }
+                    else if(result)
+                    {
+                        return res.status(200).json({
+                            status:200,
+                            message:"item updated",
+                            data:obj
+                        });
+                    }
+                });
+               }
+         
            }
        });
    });

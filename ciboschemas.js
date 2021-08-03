@@ -95,7 +95,8 @@ var items_schema = new Schema({
     item_category: String,
     price: String,
     description: String,
-    special_notes: String
+    special_notes: String,
+    active:{type:Boolean, default:true}
 });
 
 var favourite_schema = new Schema({
