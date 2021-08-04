@@ -344,7 +344,7 @@
    
     // login API
     app.post('/login',function(req,res){
-        obj=req.body;
+
         if(mail.test(req.body.email)==false || req.body.email==' ' || req.body.email==null)
         {
             return res.status(400).json({
@@ -352,16 +352,7 @@
                 message:"enter valid email",
                 error:true
             });
-        }
-        else if(pass.test(req.body.password)==false || req.body.password==' ' || req.body.password==null)
-        {
-            return res.status(400).json({
-                status:400,
-                message:"enter valid password",
-                error:true
-            });
-        }
-        req.body.password=md(req.body.password);
+        }         
         cibo.users.findOne({email:req.body.email},function(err,result){
             if(err)
             {
@@ -371,17 +362,115 @@
                 });
             }
             else if(result)
-            {                  
-                if(req.body.password==result.password)
+            {                 
+                if(result.type===req.body.type && result.google_id===req.body.google_id || result.type===req.body.type  && result.facebook_id===req.body.facebook_id)
                 {
-                    obj1={
+                  obj1={
+                        _id:result._id,
                         type:req.body.type,
-                            _id:result._id,
-                            email:req.body.email,
-                            phone_no:result.phone_no                                
-                         }
-                    jwt.sign(obj1,'ram',function(token_error,token_result)
+                        google_id:req.body.google_id,
+                        facebook_id:req.body.facebook_id,
+                        email:req.body.email
+                     }
+                   jwt.sign(obj1,'ram',function(token_err,token_result){
+                       if(token_err)
+                       {
+                           return res.status(400).json({
+                               status:400,
+                               message:err
+                           });
+                       }
+                       else if(token_result)
+                       {
+                           cibo.users.updateOne({_id:result._id},{token:token_result},function(err,result){
+                               if(err)
+                               {
+                                    return res.status(400).json({
+                                        status:400,
+                                        message:err
+                                    });
+                               }
+                               else if(result)
+                               {
+                                return res.status(200).json({
+                                    status:200,
+                                    message:"login successful 1",
+                                    token:token_result
+                                });
+                               }
+                           });
+                       }
+                   });
+                }  
+                else if(req.body.type==="manual")
+                {
+                     if(pass.test(req.body.password)==false || req.body.password==' ' || req.body.password==null)
+                            {
+                                return res.status(400).json({
+                                    status:400,
+                                    message:"enter valid password",
+                                    error:true
+                                });
+                            } 
+                                
+                    req.body.password=md(req.body.password);
+                    if(req.body.password==result.password)
                     {
+                        obj2={
+                                _id:result._id,
+                                email:req.body.email,
+                                phone_no:result.phone_no                                
+                             }
+                        jwt.sign(obj2,'ram',function(token_error,token_result)
+                        {
+                            if(token_error)
+                            {
+                                return res.status(400).json({
+                                    status:400,
+                                    message:token_error.message
+                                });
+                            }
+                            else if(token_result)
+                            {
+                                cibo.users.updateOne({email:req.body.email},{token:token_result},function(err,result){
+                                    if(err)
+                                    {
+                                        return res.status(400).json({
+                                            status:400,
+                                            message:err
+                                        });
+                                    }
+                                    else if(result)
+                                    {
+                                        return res.status(200).json({
+                                                status:200,
+                                                message:"login successful 2",
+                                                token:token_result
+                                            });
+                                    }
+                                });                      
+                            }
+                        });
+                    }                                                        
+                    else
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:"password not match",
+                            error:true
+                        });
+                    }  
+                } 
+                else 
+                {
+                    obj={
+                        _id:result._id,
+                        email:result.email,
+                        type:req.body.type,
+                        google_id:req.body.google_id,
+                        facebook_id:req.body.facebook_id
+                    }
+                    jwt.sign(obj,'ram',function(token_error,token_result){
                         if(token_error)
                         {
                             return res.status(400).json({
@@ -391,89 +480,31 @@
                         }
                         else if(token_result)
                         {
-                            cibo.users.updateOne({email:req.body.email},{token:token_result},function(err,result){
+                            cibo.users.updateOne({_id:result._id},{token:token_result,google_id:req.body.google_id,facebook_id:req.body.facebook_id,type:req.body.type},function(err,success){
                                 if(err)
                                 {
                                     return res.status(400).json({
                                         status:400,
-                                        message:err
+                                        message:err.message
                                     });
                                 }
-                                else if(result)
+                                else if(success)
                                 {
                                     return res.status(200).json({
-                                            status:200,
-                                            message:"login successful 1",
-                                            token:token_result
-                                        });
+                                        status:200,
+                                        message:"login successful 3",
+                                        token:token_result
+                                    });
                                 }
-                            });                      
+                            });
                         }
                     });
-                }                                                        
-                else
-                {
-                    return res.status(400).json({
-                        status:400,
-                        message:"password not match",
-                        error:true
-                    });
-                }                       
-                // else
-                // {
-                //     // if(req.body.password==result.password)
-                //     // {
-                //     //     obj1={
-                //     //         type:req.body.type,
-                //     //             _id:result._id,
-                //     //             email:req.body.email,
-                //     //             phone_no:result.phone_no                                
-                //     //          }
-                //     //     jwt.sign(obj1,'ram',function(token_error,token_result)
-                //     //     {
-                //     //         if(token_error)
-                //     //         {
-                //     //             return res.status(400).json({
-                //     //                 status:400,
-                //     //                 message:token_error.message
-                //     //             });
-                //     //         }
-                //     //         else if(token_result)
-                //     //         {
-                //     //             cibo.users.updateOne({email:req.body.email},{token:token_result},function(err,result){
-                //     //                 if(err)
-                //     //                 {
-                //     //                     return res.status(400).json({
-                //     //                         status:400,
-                //     //                         message:err
-                //     //                     });
-                //     //                 }
-                //     //                 else if(result)
-                //     //                 {
-                //     //                     return res.status(200).json({
-                //     //                             status:200,
-                //     //                             message:"login successful 1",
-                //     //                             token:token_result
-                //     //                         });
-                //     //                 }
-                //     //             });                      
-                //     //         }
-                //     //     });
-                //     // }                                                        
-                //     // else
-                //     // {
-                //     //     return res.status(400).json({
-                //     //         status:400,
-                //     //         message:"password not match",
-                //     //         error:true
-                //     //     });
-                //     // } 
-                // }                               
+                }                                                             
             }  
             else
             {                
                 if(req.body.type=="google" || req.body.type=="facebook")
-                {
+                {                  
                     cibo.users.create(req.body,function(err,result){
                         if(err)
                         {
@@ -484,14 +515,12 @@
                         }
                         else if(result)
                         {
-                            // return res.status(200).json({
-                            //     status:200,
-                            //     message:"user logined"
-                            // });
                             obj={
+                                type:result.type,
                                 _id:result._id,
                                 email:result.email,
-                                google_id:result.google_id
+                                google_id:result.google_id,
+                                facebook_id:result.facebook_id
                             }
                             jwt.sign(obj,'ram',function(token_error,token_result){
                                 if(token_error)
@@ -515,7 +544,7 @@
                                         {
                                             return res.status(200).json({
                                                     status:200,
-                                                    message:"login successful ",
+                                                    message:"login successful 4",
                                                     token:token_result
                                                 });
                                         }
@@ -531,7 +560,7 @@
                     status:400,
                     message:"email not found",
                     error:true
-                });
+                     });
                 }
             }         
         });

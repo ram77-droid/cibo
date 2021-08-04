@@ -74,7 +74,8 @@ var user_schema = new Schema({
         }
     },
     seller: Boolean,
-    type: String,
+    verified_seller:Boolean,
+    type: {type:String,default:"manual"},
     google_id: String,
     facebook_id: String
 });
@@ -136,7 +137,8 @@ var order_schema = new Schema({
     },
     quantity: Number,
     price: String,
-    total_pay: Number
+    total_pay: Number,
+    special_instruction:String
 });
 
 // add cart schema
@@ -161,7 +163,8 @@ var cart_schema = new Schema({
     seller_name: String,
     quantity: String,
     price: String,
-    total_pay: String
+    total_pay: String,
+    special_instruction:String
 
 });
 
