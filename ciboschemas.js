@@ -61,8 +61,8 @@ var user_schema = new Schema({
     },
     delivery_option:
     {
-        type: String,
-        enum: ['delivery', 'pick up']
+        type: Array,        
+        default:['delivery']
     },
     schedule:
     {
@@ -75,7 +75,7 @@ var user_schema = new Schema({
     },
     seller: Boolean,
     verified_seller:Boolean,
-    type: {type:String,default:"manual"},
+    type: {type:String,enum:["facebook","google","manual"],default:"manual"},
     google_id: String,
     facebook_id: String
 });
@@ -98,6 +98,11 @@ var items_schema = new Schema({
     description: String,
     special_notes: String,
     active:{type:Boolean, default:true}
+    // delivery_type:
+    // {
+    //     type: Array,        
+    //     default:[]
+    // }
 });
 
 var favourite_schema = new Schema({
@@ -129,25 +134,26 @@ var order_schema = new Schema({
     {
         type: mongoose.Types.ObjectId,
         ref: 'users'
-    },
-    item_id:
-    {
-        type: mongoose.Types.ObjectId,
-        ref: 'items'
-    },
+    },   
     quantity: Number,
     price: String,
     total_pay: Number,
-    special_instruction:String
+    special_instruction:String,
+    order_id:String,
+    order_status:{
+        type: String,
+        enum: ['completed', 'cancelled','pending'],
+        default:'pending'
+    },
+    item:{
+        type:Array,
+        default:[]
+    },
+    created_at:Date
 });
 
 // add cart schema
-var cart_schema = new Schema({
-    seller_id:
-    {
-        type: mongoose.Types.ObjectId,
-        ref: "users"
-    },
+var cart_schema = new Schema({   
     user_id:
     {
         type: mongoose.Types.ObjectId,
@@ -159,8 +165,7 @@ var cart_schema = new Schema({
         ref: 'items'
     },
     item_name: String,
-    picture: String,
-    seller_name: String,
+    picture: String,   
     quantity: String,
     price: String,
     total_pay: String,
