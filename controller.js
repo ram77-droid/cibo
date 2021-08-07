@@ -359,15 +359,16 @@
             }
             else if(result)
             {   
-                if(result.google_id!=req.body.google_id || result.facebook_id!=req.body.facebook_id)
+                           
+                 if(req.body.type=="facebook" &&  result.facebook_id!=null || req.body.type=="google" && result.google_id!=null)
                 {
-                    return res.status(400).json({
-                        status:400,
-                        message:"id not matched"
-                    });
-                }              
-                else if(req.body.type=="facebook" || req.body.type=="google")
-                {
+                    if(result.google_id!=req.body.google_id || result.facebook_id!=req.body.facebook_id)
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:"id not matched"
+                        });
+                    }  
                   obj1={
                         _id:result._id,
                         type:req.body.type,
@@ -1683,8 +1684,9 @@
                           item_name:1,
                           quantity:1,
                           price:1,
-                          lat:1,
-                          long:1
+                          total_pay:1
+                        //   lat:1,
+                        //   long:1
                       }
                   }
               ],function(err,result){
@@ -2107,6 +2109,94 @@
                 });
                }
          
+           }
+       });
+   });
+
+   // view user API
+   app.get('/view_user',midleware.check,function(req,res){
+       token=req.headers.authorization.split(' ')[1];
+       var vary=jwt.verify(token,'ram');
+       cibo.users.findOne({_id:vary._id},function(err,result){
+           if(err)
+           {
+               return res.status(400).json({
+                   status:400,
+                   message:err.message
+               });
+           }
+           else if(result)
+           {
+               cibo.order.aggregate([
+                   {
+                       $lookup:
+                       {
+                           from:'users',
+                           let:
+                           {
+                               userid:"$user_id",
+                               sellerid:"$seller_id"
+                           },
+                           pipeline:
+                           [
+                               {
+                                   $match:
+                                   {
+                                       $expr:
+                                       {
+                                           $and:[
+                                               {
+                                                $eq:["$$userid","$_id"],
+                                               },
+                                               {
+                                                $eq:["$$sellerid",mongoose.Types.ObjectId(vary._id)]
+                                               }                                         
+                                           ]                                          
+                                       }
+                                   }
+                               }
+                           ],
+                           as:"viewuser"
+                       }
+                   },
+                   {
+                       $unwind:"$viewuser"
+                   },
+                   {
+                       $addFields:
+                       {
+                           username:"$viewuser.name",
+                           deliverytype:"$viewuser.delivery_option"
+                       }
+                   },
+                   {
+                       $project:
+                       {
+                           quantity:1,
+                           total_pay:1,
+                           item:1,
+                           username:1,
+                           deliverytype:1
+                          // "viewuser.delivery_option":1
+                           //"viewuser.name":1
+                       }
+                   }
+               ],function(err,success){
+                   if(err)
+                   {
+                       return res.status(400).json({
+                           status:400,
+                           message:err.message
+                       });
+                   }
+                   else if(success)
+                   {
+                       return res.status(200).json({
+                           status:200,
+                           data:success
+                       });
+                   }
+               });
            }
        });
    });
