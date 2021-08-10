@@ -627,7 +627,7 @@
     });
 
     // reset password API
-    app.post('/resetpassword:email',function(req,res){
+    app.post('/resetpassword',function(req,res){
         console.log("email:",req.params.email);
         
         if(pass.test(req.body.password)==false || req.body.password==' '|| req.body.password==null)
@@ -963,23 +963,57 @@
                 });
             }
             else if(result)
-            {
-                cibo.items.find({seller_id:vary._id},function(err,success){
-                    if(err)
-                    {
-                        return res.status(400).json({
-                            status:400,
-                            message:err.message
+            {               
+                if(result.seller==true)
+                {
+                        cibo.items.find({seller_id:vary._id},function(err,success){
+                            if(err)
+                            {
+                                return res.status(400).json({
+                                    status:400,
+                                    message:err.message
+                                });
+                            }
+                            else if(success)
+                            {
+                                return res.status(200).json({
+                                    status:200,
+                                    message:success
+                                });
+                            }
                         });
-                    }
-                    else if(success)
-                    {
-                        return res.status(200).json({
-                            status:200,
-                            message:success
-                        });
-                    }
-                });
+                } 
+                else
+                {
+                    cibo.items.findOne({_id:req.body.item_id},function(err,result){
+                        if(err)
+                        {
+                            return res.status(400).json({
+                                status:400,
+                                message:err.message
+                            });
+                        }
+                        else if(result)
+                        {
+                            cibo.items.find({seller_id:result.seller_id},function(err,proceed){
+                                if(err)
+                                {
+                                    return res.status(400).json({
+                                        status:400,
+                                        message:err.message
+                                    });
+                                }
+                                else if(proceed)
+                                {
+                                    return res.status(200).json({
+                                        status:200,
+                                        data:proceed
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }              
             }
         });
     });
@@ -1001,7 +1035,7 @@
                 obj={
                     user_id:result._id,
                     seller_id:req.body.seller_id, 
-                    order_id:otpgen.generate(9,{ digits:true, alphabets:false, upperCase: false, specialChars: false }),                   
+                    order_number:otpgen.generate(9,{ digits:true, alphabets:false, upperCase: false, specialChars: false }),                   
                     quantity:req.body.quantity,
                     total_pay:req.body.total_pay,
                     item: req.body.item,
@@ -1258,7 +1292,8 @@
                    pictures:req.files[0].location,
                    user_id:result._id,
                    title:req.body.title,
-                   description:req.body.description
+                   description:req.body.description,
+                   created_at:Date.now()
                }
               cibo.blog.create(obj,function(err,success){
                   if(err)
@@ -1280,10 +1315,32 @@
        });
    });
 
+   // view blog API
+   app.get('/view_blog',midleware.check,function(req,res){
+       token=req.headers.authorization.split(' ')[1];
+       var vary=jwt.verify(token,'ram');
+       cibo.blog.find({user_id:vary._id},function(err,result){
+           if(err)
+           {
+               return res.status(400).json({
+                   status:400,
+                   message:err.message
+               });
+           }
+           else if(result)
+           {
+               return res.status(200).json({
+                   status:200,
+                   data:result
+               });
+           }
+       });
+   });
+
    // get order API
    app.get('/view_order',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
+       var vary=jwt.verify(token,'ram');      
        cibo.users.findOne({_id:vary._id},function(err,result){
           
            if(err)
@@ -1294,30 +1351,10 @@
                });
            }
            else if(result)
-           {
+           {              
                if(result.seller==true)
                {
-                cibo.order.find({seller_id:result._id,item:{$elemMatch:{item_id:req.body.item_id}}},function(err,success){
-                    if(err)
-                    {
-                        return res.status(400).json({
-                            status:400,
-                            message:err.message
-                        });
-                    }
-                    else if(success)
-                    {   
-                        console.log("suces:",success);                   
-                        return res.status(200).json({
-                            status:200,
-                            data:success
-                        });
-                    }
-                });
-               }
-               else
-               {
-                    cibo.order.find({user_id:result._id,item:{$elemMatch:{item_id:req.body.item_id}},order_status:"accepted"},function(err,accept){
+                    cibo.order.find({seller_id:result._id,item:{$elemMatch:{item_id:req.body.item_id}}},function(err,success){
                         if(err)
                         {
                             return res.status(400).json({
@@ -1325,16 +1362,85 @@
                                 message:err.message
                             });
                         }
-                        else if(accept)
-                        {                                                 
+                        else if(success)
+                        {                                              
                             return res.status(200).json({
                                 status:200,
-                                data:accept
+                                data:success
                             });
                         }
                     });
                }
-              
+               else
+               {                  
+                  cibo.order.aggregate([
+                        {
+                            $lookup:
+                            {
+                                from:'users',
+                                let:
+                                {
+                                    sellerid:"$seller_id",
+                                    orderid:"$order_number",
+                                    userid:"$user_id"
+                                },
+                                pipeline:
+                                [
+                                    {
+                                        $match:
+                                        {
+                                            $expr:
+                                            {
+                                                $and:
+                                                [
+                                                    {$eq:["$$sellerid","$_id"] },                                                    
+                                                    {$eq:["$$userid",mongoose.Types.ObjectId(vary._id)]}
+                                                ]                                              
+                                            }
+                                        }
+                                    }
+                                ],
+                                as:"seller"                                
+                            }
+                        },
+                        {
+                            $unwind:"$seller"
+                        },                     
+                        {
+                            $addFields:
+                            {
+                                sellername:"$seller.name",                               
+                            }
+                        },
+                        {
+                            $project:
+                            {
+                                order_status:1,
+                                item:1, 
+                                review:1,                              
+                                order_number:1,
+                                total_pay:1,
+                                sellername:1,                                
+                            }
+                        }
+                    ],function(err,result)
+                    {
+                        if(err)
+                        {
+                            return res.status(400).json({
+                                status:400,
+                                message:err.message
+                            });
+                        }
+                        else if(result)
+                        {
+                            return res.status(200).json({
+                                status:200,
+                                data:result
+                            });
+                        }
+                    });
+               }              
            }
        });
    });
@@ -1568,6 +1674,7 @@
 
    // add_to_cart API
    app.post('/add_cart',midleware.check,function(req,res){
+      
        token=req.headers.authorization.split(' ')[1];
        var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
@@ -1579,8 +1686,8 @@
                });
            }
            else if(result)
-           {
-               cibo.cart.findOne({item_id:req.body.item_id},function(err,result1){
+           {  
+               cibo.cart.findOne({item_id:req.body.item_id},function(err,success){
                    if(err)
                    {
                        return res.status(400).json({
@@ -1588,44 +1695,44 @@
                            message:err.message
                        });
                    }
-                   else if(result1)
-                   {
-                       return res.status(400).json({
-                           status:400,
-                           message:"item exists already"
-                       });
+                   else if(success)
+                   {                      
+                        return res.status(400).json({
+                            status:400,
+                            message:"item already exists"
+                        });
                    }
                    else
                    {
-                        obj={
-                            item_id:req.body.item_id,                          
-                            picture:req.body.picture,
-                            user_id:result._id,
-                            item_name:req.body.item_name,
-                            price:"Rs"+" "+req.body.price,
-                            quantity:req.body.quantity,
-                            total_pay:"Rs"+" "+req.body.quantity*req.body.price,
-                            special_instruction:req.body.special_instruction
-                        }
-                     cibo.cart.create(obj,function(err,success){
-                         if(err)
-                            {
-                                return res.status(400).json({
-                                    status:400,
-                                    message:err.message
-                                });
-                            }
-                            else if(success)
-                            {
-                                return res.status(200).json({
-                                    status:200,
-                                    message:"item added to cart"
-                                });
-                            }
-                      });
-                   }
-               });             
-           }
+                       obj={
+                           user_id:result._id,
+                           seller_id:req.body.seller_id,
+                           item_id:req.body.item_id,
+                           item_name:req.body.item_name,
+                           quantity:req.body.quantity,
+                           price:req.body.price,
+                           picture:req.body.picture,
+                           special_instruction:req.body.special_instruction
+                       }
+                       cibo.cart.create(obj,function(err,success){
+                           if(err)
+                           {
+                               return res.status(400).json({
+                                   status:400,
+                                   message:err.message
+                               });
+                           }
+                           else if(success)
+                           {
+                               return res.status(200).json({
+                                   status:200,
+                                   data:success
+                               });
+                           }
+                       });
+                   }                 
+               });                     
+            }
        });
    });
 
@@ -1665,10 +1772,10 @@
                                 }
                             }
                           ],
-                          as:"item"
+                          as:"items"
                       }
                   },
-                  {$unwind:"$item"},
+                  {$unwind:"$items"},
                   {
                       $addFields:
                       {
@@ -1678,15 +1785,13 @@
                   },
                   {
                       $project:
-                      {
-                          item_id:1,
+                      {                         
                           picture:1,
                           item_name:1,
                           quantity:1,
                           price:1,
-                          total_pay:1
-                        //   lat:1,
-                        //   long:1
+                          total_pay:1,
+                         item_id:1                        
                       }
                   }
               ],function(err,result){
@@ -2113,7 +2218,7 @@
        });
    });
 
-   // view user API
+   // view user by seller API
    app.get('/view_user',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
        var vary=jwt.verify(token,'ram');
@@ -2176,9 +2281,7 @@
                            total_pay:1,
                            item:1,
                            username:1,
-                           deliverytype:1
-                          // "viewuser.delivery_option":1
-                           //"viewuser.name":1
+                           deliverytype:1                         
                        }
                    }
                ],function(err,success){
@@ -2197,6 +2300,44 @@
                        });
                    }
                });
+           }
+       });
+   });
+
+   // review API
+   app.post('/review',midleware.check,function(req,res){
+       token=req.headers.authorization.split(' ')[1];
+       var vary=jwt.verify(token,'ram');
+       cibo.users.findOne({_id:vary._id},function(err,result){
+           if(err)
+           {
+               return res.status(400).json({
+                   status:400,
+                   message:err.message
+               });
+           }
+           else if(result)
+           {
+               console.log("id:",result._id);
+              req.body.review.forEach(element => {
+                
+                cibo.order.updateOne({order_number:req.body.order_number},{ $push:{review:{$each:[{user_id:result._id,rating:element.rating,message:element.message}]}}},function(err,success){
+                    if(err)
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:err.message
+                        });
+                    }
+                    else if(success)
+                    {
+                        return res.status(200).json({
+                            status:200,
+                            data:"review added"
+                        });
+                    }
+                });
+              });               
            }
        });
    });

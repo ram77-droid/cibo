@@ -80,6 +80,17 @@ var user_schema = new Schema({
     facebook_id: String
 });
 
+// review schema
+var review_schema = new Schema({        
+    user_id:
+    {
+        type: mongoose.Types.ObjectId,
+        ref: "users"
+    },
+    rating:String,
+    message: String
+});
+
 // item schema
 var items_schema = new Schema({
     seller_id:
@@ -97,12 +108,7 @@ var items_schema = new Schema({
     price: String,
     description: String,
     special_notes: String,
-    active:{type:Boolean, default:true}
-    // delivery_type:
-    // {
-    //     type: Array,        
-    //     default:[]
-    // }
+    active:{type:Boolean, default:true},     
 });
 
 var favourite_schema = new Schema({
@@ -123,6 +129,20 @@ var favourite_schema = new Schema({
     status: Boolean
 });
 
+// array schema
+var arr= new Schema({   
+    item_id:{
+        type: mongoose.Types.ObjectId,
+        ref: "items"
+    },      
+    total_pay: String,
+    special_instruction:String,
+    picture:String,
+    item_name:String,
+    price:String,
+    quantity:String
+});
+
 // order schema
 var order_schema = new Schema({
     seller_id:
@@ -134,21 +154,20 @@ var order_schema = new Schema({
     {
         type: mongoose.Types.ObjectId,
         ref: 'users'
-    },   
-    quantity: Number,
-    price: String,
-    total_pay: Number,
+    },      
+    total_pay: String,
     special_instruction:String,
-    order_id:String,
+    order_number:String,
+    delivery_charge:String,
+    service_charge:String,
+    promo_discount:String,
     order_status:{
         type: String,
         enum: ['completed', 'cancelled','pending'],
         default:'pending'
     },
-    item:{
-        type:Array,
-        default:[]
-    },
+    item:[arr],
+    review:[review_schema],
     created_at:Date
 });
 
@@ -159,18 +178,22 @@ var cart_schema = new Schema({
         type: mongoose.Types.ObjectId,
         ref: 'users'
     },
-    item_id:
+    item_id:{
+        type: mongoose.Types.ObjectId,
+        ref: "items"
+    },  
+    seller_id:
     {
         type: mongoose.Types.ObjectId,
-        ref: 'items'
-    },
-    item_name: String,
-    picture: String,   
-    quantity: String,
-    price: String,
+        ref: "users"
+    }, 
     total_pay: String,
-    special_instruction:String
-
+    special_instruction:String,
+    picture:String,
+    item_name:String,
+    price:String,
+    quantity:String
+   
 });
 
 // blog schema
@@ -182,7 +205,8 @@ var blog_schema = new Schema({
     },
     pictures: String,
     title: String,
-    description: String
+    description: String,
+    created_at:Date
 });
 
 // payment schema
@@ -207,25 +231,7 @@ var payment_schema = new Schema({
     validate_date: Date
 });
 
-// review schema
-var review_schema = new Schema({
-    seller_id:
-    {
-        type: mongoose.Types.ObjectId,
-        ref: 'users'
-    },
-    item_id:
-    {
-        type: mongoose.Types.ObjectId,
-        ref: "items"
-    },
-    User_id:
-    {
-        type: mongoose.Types.ObjectId,
-        ref: "users"
-    },
-    review: String
-});
+
 
 user_schema.index({ location: '2dsphere' });
 var users = mongoose.model('users', user_schema);
@@ -252,6 +258,6 @@ module.exports.blog = blog;
 var payment = mongoose.model('payments', payment_schema);
 module.exports.payment = payment;
 
-var review = mongoose.model('reviews', review_schema);
-module.exports.review = review;
+// var review = mongoose.model('reviews', review_schema);
+// module.exports.review = review;
 
