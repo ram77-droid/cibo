@@ -41,11 +41,11 @@ var user_schema = new Schema({
     image: String,
 
     // seller details
-    pan_card_number: { type: String, unique:true, sparse: true },
-    adhar_number: { type: String, unique: true, sparse: true },
-    pan_card_image: String,
-    adhar_card_image_front: String,
-    adhar_card_image_back: String,
+    pan_card_number: { type: String,  sparse: true },
+    adhar_number: { type: String,  sparse: true },
+    pan_card_image: {type:String},
+    adhar_card_image_front: {type:String },
+    adhar_card_image_back:{type:String },
     physical_address: {
         street_name: String,
         city: String,
@@ -54,9 +54,9 @@ var user_schema = new Schema({
     },
     bank_details:
     {
-        account_number: { type: Number, unique: true, sparse:true },
+        account_number: { type: String,  sparse:true },
         account_holder_name: String,
-        ifse_code: { type: String, unique: true, sparse:true },
+        ifse_code: { type: String,  sparse:true },
         bank_name: String
     },
     delivery_option:
@@ -64,6 +64,7 @@ var user_schema = new Schema({
         type: Array,        
         default:['delivery']
     },
+    delivery_address:String,
     schedule:
     {
         date: Date,
@@ -155,10 +156,15 @@ var order_schema = new Schema({
         type: mongoose.Types.ObjectId,
         ref: 'users'
     },      
-    total_pay: String,
+    grand_total: String,
     special_instruction:String,
     order_number:String,
     delivery_charge:String,
+    delivery_time:
+    {
+        type:String,
+        enum:["priority","standard"]
+     },
     service_charge:String,
     promo_discount:String,
     order_status:{
@@ -166,8 +172,13 @@ var order_schema = new Schema({
         enum: ['completed', 'cancelled','pending'],
         default:'pending'
     },
+    status:{
+        type:String,
+        enum:["accept","reject","submit_order_delivery","submit_order_pickup","cancel"]
+    },
     item:[arr],
     review:[review_schema],
+    payment_method:String,
     created_at:Date
 });
 

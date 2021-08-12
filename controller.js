@@ -145,7 +145,7 @@
                     email:req.body.email,
                     password:req.body.password,
                     confirm_password:req.body.confirm_password,
-                    phone_no:req.body.phone_no,
+                    phone_no:req.body.phone_no,                   
                     otp:otpgen.generate(6,{ digits:true, alphabets:false, upperCase: false, specialChars: false }),
                     }               
             console.log('object is',obj);
@@ -317,6 +317,7 @@
                 },
                 lat:parseFloat(req.body.lat),
                 long:parseFloat(req.body.long),
+                delivery_address:req.body.delivery_address
               }
               cibo.users.updateOne({_id:vary._id},obj,function(err,result){
                   if(err)
@@ -398,7 +399,7 @@
                                {
                                 return res.status(200).json({
                                     status:200,
-                                    message:"login successful 1",
+                                    message:"login successful ",
                                     token:token_result
                                 });
                                }
@@ -448,7 +449,7 @@
                                     {
                                         return res.status(200).json({
                                                 status:200,
-                                                message:"login successful 2",
+                                                message:"login successful ",
                                                 token:token_result
                                             });
                                     }
@@ -496,7 +497,7 @@
                                 {
                                     return res.status(200).json({
                                         status:200,
-                                        message:"login successful 3",
+                                        message:"login successful ",
                                         token:token_result
                                     });
                                 }
@@ -548,7 +549,7 @@
                                         {
                                             return res.status(200).json({
                                                     status:200,
-                                                    message:"login successful 4",
+                                                    message:"login successful ",
                                                     token:token_result
                                                 });
                                         }
@@ -738,7 +739,7 @@
             {               
                 if(req.body.delivery_option==null)
                 {  
-                    if(req.body.pan_card_number?.length!=10)
+                    if(req.body.pan_card_number.length!=10)
                     {
                         return res.status(400).json({
                             status:400,
@@ -852,6 +853,7 @@
             }
             else if(success)
             {
+               // console.log("detailL:",req.body.bank_details.account_number);
                 cibo.users.updateOne({_id:vary._id},{bank_details:req.body.bank_details},function(err,result){
                     if(err)
                     {
@@ -1036,9 +1038,9 @@
                     user_id:result._id,
                     seller_id:req.body.seller_id, 
                     order_number:otpgen.generate(9,{ digits:true, alphabets:false, upperCase: false, specialChars: false }),                   
-                    quantity:req.body.quantity,
-                    total_pay:req.body.total_pay,
+                    quantity:req.body.quantity,                    
                     item: req.body.item,
+                    payment_method:req.body.payment_method,
                     created_at:Date.now()      
                 }
                 cibo.order.create(obj,function(err,result){
@@ -1057,6 +1059,7 @@
                         });
                     }
                 });
+                
             }
         });        
     });
@@ -1103,7 +1106,7 @@
     });
 
     // edit profile API
-    app.post('/edit',profile.any(),midleware.check,function(req,res){
+    app.post('/edit_profile',profile.any(),midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
         cibo.users.findOne({_id:vary._id},function(err,result){
@@ -1340,7 +1343,7 @@
    // get order API
    app.get('/view_order',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');      
+       var vary=jwt.verify(token,'ram');             
        cibo.users.findOne({_id:vary._id},function(err,result){
           
            if(err)
@@ -1354,22 +1357,66 @@
            {              
                if(result.seller==true)
                {
-                    cibo.order.find({seller_id:result._id,item:{$elemMatch:{item_id:req.body.item_id}}},function(err,success){
-                        if(err)
-                        {
-                            return res.status(400).json({
-                                status:400,
-                                message:err.message
-                            });
-                        }
-                        else if(success)
-                        {                                              
-                            return res.status(200).json({
-                                status:200,
-                                data:success
-                            });
-                        }
-                    });
+                   console.log("id:",result._id);
+                   cibo.order.aggregate([
+                       {
+                           $lookup:
+                           {
+                               from:'users',
+                               let:
+                               {
+                                   id:"$seller_id"
+                               },
+                               pipeline:
+                               [
+                                   {
+                                       $match:
+                                       {
+                                           $expr:
+                                           {
+                                            $and:
+                                            [                                                                                                
+                                                {$eq:["$$id","$_id"]}                                               
+                                            ]    
+                                           }                                        
+                                       }
+                                   }
+                               ],
+                               as:"order"
+                           }
+                       },
+                       {
+                           $unwind:"$order"
+                       },
+                       {
+                           $addFields:
+                           {
+                               deliverytype:"$order.delivery_option",                               
+                           }
+                       },
+                       {
+                           $project:
+                           {
+                               item:1,
+                               deliverytype:1
+                           }
+                       }
+                   ],function(err,success){
+                       if(err)
+                       {
+                           return res.status(400).json({
+                               status:400,
+                               message:err.message
+                           });
+                       }
+                       else if(success)
+                       {
+                           return res.status(200).json({
+                               status:200,
+                               data:success
+                           });
+                       }
+                   });
                }
                else
                {                  
@@ -1382,7 +1429,8 @@
                                 {
                                     sellerid:"$seller_id",
                                     orderid:"$order_number",
-                                    userid:"$user_id"
+                                    userid:"$user_id",
+                                    orderstatus:"$order_status"
                                 },
                                 pipeline:
                                 [
@@ -1395,6 +1443,7 @@
                                                 [
                                                     {$eq:["$$sellerid","$_id"] },                                                    
                                                     {$eq:["$$userid",mongoose.Types.ObjectId(vary._id)]}
+                                                    // {$ne:["$$orderstatus","pending"]}
                                                 ]                                              
                                             }
                                         }
@@ -1423,7 +1472,7 @@
                                 sellername:1,                                
                             }
                         }
-                    ],function(err,result)
+                    ],function(err,result1)
                     {
                         if(err)
                         {
@@ -1432,14 +1481,14 @@
                                 message:err.message
                             });
                         }
-                        else if(result)
+                        else if(result1)
                         {
                             return res.status(200).json({
                                 status:200,
-                                data:result
+                                data:result1
                             });
                         }
-                    });
+                    }).sort({_id:-1});
                }              
            }
        });
@@ -1449,7 +1498,7 @@
    app.post('/accept_order',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
        var vary=jwt.verify(token,'ram');
-       cibo.order.findOne({seller_id:vary._id},function(err,result){
+       cibo.order.findOne({seller_id:vary._id,order_number:req.body.order_number},function(err,result){
            if(err)
            {
                return res.status(400).json({
@@ -1459,7 +1508,31 @@
            }
            else if(result)
            {
-               cibo.order.updateOne({order_id:result.order_id},{order_status:"accepted"},function(err,success){
+               var order;
+               if(req.body.status=="accept")
+               {
+                   order=req.body.status;
+               }
+               else if(req.body.status=="reject")
+               {
+                   order=req.body.status;
+               }
+               else if(req.body.status=="cancel")
+               {
+                   order="cancelled";
+               }
+               else if(req.body.status=="submit_order_delivery" || req.body.status=="submit_order_pickup")
+               {
+                      order="completed";
+               }
+               else
+               {
+                   return res.status(400).json({
+                       status:400,
+                       message:"status not valid"
+                   });
+               }
+               cibo.order.updateOne({order_number:result.order_number},{order_status:order},function(err,success){
                    if(err)
                    {
                         return res.status(400).json({
@@ -1471,7 +1544,7 @@
                    {
                     return res.status(200).json({
                         status:200,
-                        message:"order accepted"
+                        message:"done"
                     });
                    }
                });
@@ -1673,8 +1746,7 @@
    });  
 
    // add_to_cart API
-   app.post('/add_cart',midleware.check,function(req,res){
-      
+   app.post('/add_cart',midleware.check,function(req,res){      
        token=req.headers.authorization.split(' ')[1];
        var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
@@ -1686,7 +1758,7 @@
                });
            }
            else if(result)
-           {  
+           {               
                cibo.cart.findOne({item_id:req.body.item_id},function(err,success){
                    if(err)
                    {
@@ -1696,40 +1768,65 @@
                        });
                    }
                    else if(success)
-                   {                      
+                   { 
                         return res.status(400).json({
                             status:400,
                             message:"item already exists"
-                        });
+                        });               
                    }
                    else
                    {
-                       obj={
-                           user_id:result._id,
-                           seller_id:req.body.seller_id,
-                           item_id:req.body.item_id,
-                           item_name:req.body.item_name,
-                           quantity:req.body.quantity,
-                           price:req.body.price,
-                           picture:req.body.picture,
-                           special_instruction:req.body.special_instruction
-                       }
-                       cibo.cart.create(obj,function(err,success){
+                       cibo.items.findOne({_id:req.body.item_id},function(err,proceed){
                            if(err)
                            {
-                               return res.status(400).json({
-                                   status:400,
-                                   message:err.message
-                               });
+                                return res.status(400).json({
+                                    status:400,
+                                    message:err.message
+                                });
                            }
-                           else if(success)
-                           {
-                               return res.status(200).json({
-                                   status:200,
-                                   data:success
-                               });
+                           else if(proceed)
+                           {                               
+                               if(proceed.seller_id==req.body.seller_id)
+                               {
+                                   obj={
+                                           user_id:result._id,
+                                           seller_id:req.body.seller_id,
+                                           item_id:req.body.item_id,
+                                           item_name:req.body.item_name,
+                                           quantity:req.body.quantity,
+                                           price:req.body.price,
+                                           picture:req.body.picture,
+                                           special_instruction:req.body.special_instruction,
+                                           total_pay:req.body.price*req.body.quantity
+                                       }
+                                       cibo.cart.create(obj,function(err,success1){
+                                           if(err)
+                                           {
+                                               return res.status(400).json({
+                                                   status:400,
+                                                   message:err.message
+                                               });
+                                           }
+                                           else if(success1)
+                                           {
+                                               return res.status(200).json({
+                                                   status:200,
+                                                   data:success1,
+                                                   message:"item added to cart"
+                                               });
+                                           }
+                                       });
+                               }
+                               else 
+                               {
+                                   return res.status(400).json({
+                                       status:400,
+                                       message:"item id must be of same seller"
+                                   })
+                               }
                            }
-                       });
+                       })
+                       
                    }                 
                });                     
             }
@@ -2338,6 +2435,359 @@
                     }
                 });
               });               
+           }
+       });
+   });
+
+   // filter API
+   app.post('/filter',midleware.check,function(req,res){
+      token=req.headers.authorization.split(' ')[1];
+       var vary=jwt.verify(token,'ram');
+       cibo.users.findOne({_id:vary._id},function(err,result){
+           if(err)
+           {
+               return res.status(400).json({
+                   status:400,
+                   message:rr.message
+               });
+           }
+           else if(result)
+           {
+               if(req.body.price && req.body.range)
+               {
+                cibo.items.aggregate([
+                    {
+                        $lookup:
+                        {
+                            from:'users',
+                            let:
+                            {
+                                sellerid:"$seller_id",
+                                prices:"$price"
+                            },
+                            pipeline:
+                            [
+                             {
+                                 $geoNear:
+                                 {
+                                     near:result.location,
+                                     distanceField:"dist.distance",
+                                     maxDistance:req.body.range*1000,
+                                     spherical: true
+                                 }
+                             },
+                                {
+                                    $match:
+                                    {
+                                        $expr:
+                                        {
+                                            $and:[
+                                                { $eq:["$$sellerid","$_id"] },
+                                                { $lte:["$$prices",req.body.price] }                                            
+                                            ]                                         
+                                        }
+                                    }
+                                }
+                            ],
+                            as:"filter"
+                        }
+                    },
+                    {
+                        $unwind:"$filter"
+                    },
+                    {
+                        $addFields:
+                        {
+                            sellername:"$filter.name",
+                            distance:"$filter.dist.distance"
+                        }
+                    },
+                    {
+                      $sort:{price:-1}
+                    },
+                    {
+                        $project:
+                        {
+                            item_name:1,
+                            picture:1,
+                            price:1,
+                           sellername:1,
+                           distance:{ $round: [ "$distance", 0] }
+                        }
+                    }
+                ],function(err,success){
+                    if(err)
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:err.message
+                        });
+                    }
+                    else if(success)
+                    {
+                        return res.status(200).json({
+                            status:200,
+                            data:success
+                        });
+                    }
+                });
+               }
+               else if(req.body.price)
+               {
+                cibo.items.aggregate([
+                    {
+                        $lookup:
+                        {
+                            from:'users',
+                            let:
+                            {
+                                sellerid:"$seller_id",
+                                prices:"$price"
+                            },
+                            pipeline:
+                            [
+                            //  {
+                            //      $geoNear:
+                            //      {
+                            //          near:result.location,
+                            //          distanceField:"dist.distance",
+                            //          maxDistance:req.body.range*1000,
+                            //          spherical: true
+                            //      }
+                            //  },
+                                {
+                                    $match:
+                                    {
+                                        $expr:
+                                        {
+                                            $and:[
+                                                { $eq:["$$sellerid","$_id"] },
+                                                { $lte:["$$prices",req.body.price] }                                            
+                                            ]                                         
+                                        }
+                                    }
+                                }
+                            ],
+                            as:"filter"
+                        }
+                    },
+                    {
+                        $unwind:"$filter"
+                    },
+                    {
+                        $addFields:
+                        {
+                            sellername:"$filter.name",
+                            distance:"$filter.dist.distance"
+                        }
+                    },
+                    {
+                      $sort:{price:-1}
+                    },
+                    {
+                        $project:
+                        {
+                            item_name:1,
+                            picture:1,
+                            price:1,
+                           sellername:1,
+                           distance:{ $round: [ "$distance", 0] }
+                        }
+                    }
+                ],function(err,success){
+                    if(err)
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:err.message
+                        });
+                    }
+                    else if(success)
+                    {
+                        return res.status(200).json({
+                            status:200,
+                            data:success
+                        });
+                    }
+                });
+               }
+               else if(req.body.range)
+               {
+                cibo.items.aggregate([
+                    {
+                        $lookup:
+                        {
+                            from:'users',
+                            let:
+                            {
+                                sellerid:"$seller_id",
+                                prices:"$price"
+                            },
+                            pipeline:
+                            [
+                             {
+                                 $geoNear:
+                                 {
+                                     near:result.location,
+                                     distanceField:"dist.distance",
+                                     maxDistance:req.body.range*1000,
+                                     spherical: true
+                                 }
+                             },
+                                {
+                                    $match:
+                                    {
+                                        $expr:
+                                        {
+                                            $and:[
+                                                { $eq:["$$sellerid","$_id"] }
+                                                //{ $lte:["$$prices",req.body.price] }                                            
+                                            ]                                         
+                                        }
+                                    }
+                                }
+                            ],
+                            as:"filter"
+                        }
+                    },
+                    {
+                        $unwind:"$filter"
+                    },
+                    {
+                        $addFields:
+                        {
+                            sellername:"$filter.name",
+                            distance:"$filter.dist.distance"
+                        }
+                    },
+                    {
+                      $sort:{price:-1}
+                    },
+                    {
+                        $project:
+                        {
+                            item_name:1,
+                            picture:1,
+                            price:1,
+                           sellername:1,
+                           distance:{ $round: [ "$distance", 0] }
+                        }
+                    }
+                ],function(err,success){
+                    if(err)
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:err.message
+                        });
+                    }
+                    else if(success)
+                    {
+                        return res.status(200).json({
+                            status:200,
+                            data:success
+                        });
+                    }
+                });
+               }
+            //    cibo.items.aggregate([
+            //        {
+            //            $lookup:
+            //            {
+            //                from:'users',
+            //                let:
+            //                {
+            //                    sellerid:"$seller_id",
+            //                    prices:"$price"
+            //                },
+            //                pipeline:
+            //                [
+            //                 {
+            //                     $geoNear:
+            //                     {
+            //                         near:result.location,
+            //                         distanceField:"dist.distance",
+            //                         maxDistance:req.body.range*1000,
+            //                         spherical: true
+            //                     }
+            //                 },
+            //                    {
+            //                        $match:
+            //                        {
+            //                            $expr:
+            //                            {
+            //                                $and:[
+            //                                    { $eq:["$$sellerid","$_id"] },
+            //                                    { $lte:["$$prices",req.body.price] }                                            
+            //                                ]                                         
+            //                            }
+            //                        }
+            //                    }
+            //                ],
+            //                as:"filter"
+            //            }
+            //        },
+            //        {
+            //            $unwind:"$filter"
+            //        },
+            //        {
+            //            $addFields:
+            //            {
+            //                sellername:"$filter.name",
+            //                distance:"$filter.dist.distance"
+            //            }
+            //        },
+            //        {
+            //          $sort:{price:-1}
+            //        },
+            //        {
+            //            $project:
+            //            {
+            //                item_name:1,
+            //                picture:1,
+            //                price:1,
+            //               sellername:1,
+            //               distance:{ $round: [ "$distance", 0] }
+            //            }
+            //        }
+            //    ],function(err,success){
+            //        if(err)
+            //        {
+            //            return res.status(400).json({
+            //                status:400,
+            //                message:err.message
+            //            });
+            //        }
+            //        else if(success)
+            //        {
+            //            return res.status(200).json({
+            //                status:200,
+            //                data:success
+            //            });
+            //        }
+            //    });
+           }
+       });
+   });
+
+   // add bio API
+   app.post('/add_bio',midleware.check,function(req,res){
+       token=req.headers.authorization.split(' ')[1];
+       var vary=jwt.verify(token,'ram');
+       cibo.users.findOneAndUpdate({_id:vary._id},{bio:req.body.bio},function(err,result){
+           if(err)
+           {
+               return res.status(400).json({
+                   status:400,
+                   message:err.message
+               });
+           }
+           else if(result)
+           {
+               return res.status(200).json({
+                   status:200,
+                   message:"bio added"
+               });
            }
        });
    });
