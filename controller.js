@@ -360,6 +360,9 @@
             }
             else if(result)
             {   
+                var seller;
+                seller=result.seller;
+                console.log("seller:",seller);
                            
                  if(req.body.type=="facebook" &&  result.facebook_id!=null || req.body.type=="google" && result.google_id!=null)
                 {
@@ -400,6 +403,7 @@
                                 return res.status(200).json({
                                     status:200,
                                     message:"login successful ",
+                                    seller:seller,
                                     token:token_result
                                 });
                                }
@@ -450,6 +454,7 @@
                                         return res.status(200).json({
                                                 status:200,
                                                 message:"login successful ",
+                                                seller:seller,
                                                 token:token_result
                                             });
                                     }
@@ -498,6 +503,7 @@
                                     return res.status(200).json({
                                         status:200,
                                         message:"login successful ",
+                                        seller:seller,
                                         token:token_result
                                     });
                                 }
@@ -550,6 +556,7 @@
                                             return res.status(200).json({
                                                     status:200,
                                                     message:"login successful ",
+                                                    seller:seller,
                                                     token:token_result
                                                 });
                                         }
@@ -2146,7 +2153,7 @@
                         price:1,
                         seller_name:1,
                        // "seller.name":1,
-                       distance:1
+                       distance:{ $round: [ "$distance", 0] }
                     }
                 }
                ],function(err,success){
