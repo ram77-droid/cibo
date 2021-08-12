@@ -1184,7 +1184,7 @@
    });
 
    // change password API
-   app.post('/change',midleware.check,function(req,res){
+   app.post('/change_password',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
        var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
