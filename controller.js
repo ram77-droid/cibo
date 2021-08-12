@@ -901,7 +901,7 @@
                     picture:req.files[0].location,
                     item_name:req.body.item_name,
                     item_category:req.body.item_category,
-                    price:"Rs "+req.body.price,
+                    price:req.body.price,
                     description:req.body.description,
                     special_notes:req.body.special_notes,
                     active:req.body.active,
