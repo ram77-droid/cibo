@@ -106,7 +106,7 @@ var items_schema = new Schema({
     },
     item_name: String,
     item_category: String,
-    price: String,
+    price: Number,
     description: String,
     special_notes: String,
     active:{type:Boolean, default:true},     
@@ -156,7 +156,7 @@ var order_schema = new Schema({
         type: mongoose.Types.ObjectId,
         ref: 'users'
     },      
-    grand_total: String,
+    grand_total: Number,
     special_instruction:String,
     order_number:String,
     delivery_charge:String,
@@ -198,12 +198,12 @@ var cart_schema = new Schema({
         type: mongoose.Types.ObjectId,
         ref: "users"
     }, 
-    total_pay: String,
+    total_pay: Number,
     special_instruction:String,
     picture:String,
     item_name:String,
-    price:String,
-    quantity:String
+    price:Number,
+    quantity:Number
    
 });
 
@@ -248,6 +248,7 @@ user_schema.index({ location: '2dsphere' });
 var users = mongoose.model('users', user_schema);
 module.exports.users = users;
 
+items_schema.index({item_name:"text", item_category:"text"});
 var items = mongoose.model('items', items_schema);
 module.exports.items = items;
 

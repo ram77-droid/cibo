@@ -13,7 +13,7 @@ module.exports.check= function check(req,res,next)
         token=req.headers.authorization.split(' ')[1];
        
         var vary=jwt.verify(token,'ram');
-       
+      
         cibo.users.findOne({_id:vary._id},function(err,result){
            
             if(err)
