@@ -3099,7 +3099,7 @@
                         {
                             picture:1,
                             item_name:1,  
-                            distance:1                                         
+                            distance:{ $round: [ "$distance", 1] }                                        
                         }
                     }                   
                  ],function(err,success){
