@@ -2,6 +2,17 @@ var data = require('./database');
 var mongoose = require('mongoose');
 const { Schema } = mongoose;
 
+// review schema
+var review_schema = new Schema({        
+    user_id:
+    {
+        type: mongoose.Types.ObjectId,
+        ref: "users"
+    },
+    rating:Number,
+    message: String
+});
+
 // user schema
 var user_schema = new Schema({
     name: String,
@@ -78,18 +89,8 @@ var user_schema = new Schema({
     verified_seller:Boolean,
     type: {type:String,enum:["facebook","google","manual"],default:"manual"},
     google_id: String,
-    facebook_id: String
-});
-
-// review schema
-var review_schema = new Schema({        
-    user_id:
-    {
-        type: mongoose.Types.ObjectId,
-        ref: "users"
-    },
-    rating:String,
-    message: String
+    facebook_id: String,
+    review:[review_schema]
 });
 
 // item schema

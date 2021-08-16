@@ -23,8 +23,7 @@ module.exports.check= function check(req,res,next)
                 });
             }
             else if(result)
-            {
-               
+            {                
                if(result.token==token)
                 {
                     next();

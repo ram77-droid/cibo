@@ -466,7 +466,7 @@
                     {
                         return res.status(400).json({
                             status:400,
-                            message:"password not match",
+                            message:"incorrect password",
                             error:true
                         });
                     }  
@@ -1088,7 +1088,7 @@
                     quantity:req.body.quantity,                    
                     item: req.body.item,
                     payment_method:req.body.payment_method,
-                    created_at:Date.now()      
+                    created_at:Date.now().toString()      
                 }
                 cibo.order.create(obj,function(err,result){
                     if(err)
@@ -1934,7 +1934,7 @@
                           item_name:1,
                           quantity:1,
                           price:1,
-                          total_pay:1,
+                         // total_pay:1,
                          item_id:1                        
                       }
                   }
@@ -1951,7 +1951,7 @@
                       var grand_total=0;
                       for(var i=0;i<result1.length;i++)
                       {
-                        grand_total=grand_total+result1[i].total_pay;                         
+                        grand_total=grand_total+result1[i].price*result1[i].quantity;                         
                       }
                       return res.status(200).json({
                           status:200,
@@ -1999,7 +1999,7 @@
    })
 
    // view only item API
-   app.get('/only_item',midleware.check,function(req,res){
+   app.get('/only_item/:item_id',midleware.check,function(req,res){
     token=req.headers.authorization.split(' ')[1];
     var vary=jwt.verify(token,'ram');
     cibo.users.findOne({_id:vary._id},function(err,result){
@@ -2042,7 +2042,7 @@
                                              {
                                                  $eq:["$$sellerid","$_id"]
                                              },{
-                                                 $eq:["$$id",mongoose.Types.ObjectId("6108d66832fd350fc8ef0142")]
+                                                 $eq:["$$id",mongoose.Types.ObjectId(req.params.item_id)]
                                              }                                           
                                          ]
                                      }
@@ -2236,22 +2236,48 @@
            }
            else if(result)
            {
-               obj={
-                   name:result.name,
-                   image:result.image,
-                   email:result.email,
-                   phone_no:result.phone_no
-               }
-               return res.status(200).json({
-                   status:200,
-                   data:obj
-               });
+               if(result.seller==true)
+               {
+                    var sum=0,rating,rating1;         
+                    for(var i=0;i<result.review.length;i++)
+                    {               
+                    sum=sum + result.review[i].rating;
+                    }
+                    rating=sum/result.review.length;
+                    rating1=rating.toFixed(1);
+                    // console.log("top:",typeof(rating1));
+                    obj={
+                        name:result.name,
+                        image:result.image,
+                        email:result.email,
+                        phone_no:result.phone_no
+                    }
+                    return res.status(200).json({
+                        status:200,
+                        rating:rating1, 
+                        reviews:result.review.length,               
+                        data:obj
+                    });
+               } 
+               else
+               {
+                    obj={
+                        name:result.name,
+                        image:result.image,
+                        email:result.email,
+                        phone_no:result.phone_no
+                    }
+                    return res.status(200).json({
+                        status:200,                                       
+                        data:obj
+                    });
+               }        
            }
        });
    });
 
    // delete favourite item API
-   app.delete('/delete_favourite_item',midleware.check,function(req,res){
+   app.delete('/delete_favourite_item/:item_id',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
        var vary=jwt.verify(token,'ram');
        cibo.favourite.findOneAndDelete({user_id:vary._id,item_id:req.params.item_id},function(err,result){
@@ -2471,7 +2497,7 @@
                console.log("id:",result._id);
               req.body.review.forEach(element => {
                 
-                cibo.order.updateOne({order_number:req.body.order_number},{ $push:{review:{$each:[{user_id:result._id,rating:element.rating,message:element.message}]}}},function(err,success){
+                cibo.users.updateOne({_id:req.body.seller_id},{ $push:{review:{$each:[{user_id:result._id,rating:element.rating,message:element.message}]}}},function(err,success){
                     if(err)
                     {
                         return res.status(400).json({
@@ -2488,6 +2514,28 @@
                     }
                 });
               });               
+           }
+       });
+   });
+
+   // view_review API
+   app.get('/view_review',midleware.check,function(req,res){
+       token=req.headers.authorization.split(' ')[1];
+       var vary=jwt.verify(token,'ram');
+       cibo.users.findOne({_id:vary._id},function(err,result){
+           if(err)
+           {
+               return res.status(400).json({
+                   status:400,
+                   message:err.message
+               });
+           }
+           else if(result)
+           {              
+               return res.status(200).json({
+                   status:200,                  
+                   data:result.review
+               });
            }
        });
    });
@@ -2598,16 +2646,7 @@
                                 prices:"$price"
                             },
                             pipeline:
-                            [
-                            //  {
-                            //      $geoNear:
-                            //      {
-                            //          near:result.location,
-                            //          distanceField:"dist.distance",
-                            //          maxDistance:req.body.range*1000,
-                            //          spherical: true
-                            //      }
-                            //  },
+                            [                           
                                 {
                                     $match:
                                     {
@@ -3021,11 +3060,10 @@
                });
            }
            else if(result)
-           {
-              
+           {              
                if(result.delivery_option=="delivery")
                {                
-                cibo.items.aggregate([                
+                 cibo.items.aggregate([                
                     {
                         $match:
                         {
@@ -3117,13 +3155,228 @@
                             data:success
                         });
                     }
-                });
+                 });
+               }
+        else
+        {
+            cibo.items.aggregate([                
+                {
+                    $match:
+                    {
+                         $or:[
+                         {item_name:{$regex:req.body.text,$options:"i"} },
+                        {item_category:{$regex:req.body.text,$options:"i"} }
+                         ]
+                    }             
+                 },  
+                {
+                    $lookup:
+                    {
+                        from:"users",
+                        let:
+                        {
+                            sellerid:"$seller_id",
+                            active:"$active",
+                            itmename:"$item_name"                                   
+                        },
+                        pipeline:
+                        [                            
+                            {
+                                $geoNear:
+                                {
+                                    near:result.location,
+                                    distanceField:"dist.distance",
+                                    maxDistance:150*1000,
+                                    spherical: true
+                                }
+                            },
+                            {
+                                $match:
+                                {                                    
+                                    $expr:
+                                    {
+                                        $and:[
+                                            {
+                                                $eq:["$$sellerid","$_id"]
+                                            },
+                                            {
+                                                $ne:["$$sellerid",mongoose.Types.ObjectId(vary._id)]
+                                            },
+                                            // {
+                                            //     $eq:["$$active",true]
+                                            // }, 
+                                            {
+                                                $ne:["$delivery_option","delivery"]             
+                                            }                                                                                                                                                                                                                 
+                                        ]
+                                    }
+                                }
+                            }
+                        ],
+                        as:"seller"                            
+                    }
+                },
+
+                {
+                    $unwind:"$seller"
+                },
+
+                {
+                $addFields:
+                {
+                    distance:"$seller.dist.distance"
+                }
+                },
+
+                {
+                    $project:
+                    {
+                        picture:1,
+                        item_name:1,  
+                        distance:{ $round: [ "$distance", 1] }                                        
+                    }
+                }                   
+             ],function(err,success){
+                if(err)
+                {
+                    return res.status(400).json({
+                        status:400,
+                        message:err.message
+                    });
+                }
+                else if(success)
+                {                       
+                    return res.status(200).json({
+                        status:200,
+                        data:success
+                    });
+                }
+            });
         }
             
            }
        })
+   }); 
+
+   // trending items API
+   app.get('/trending',midleware.check,function(req,res){
+       token=req.headers.authorization.split(' ')[1];
+       var vary=jwt.verify(token,'ram');
+       cibo.users.findOne({_id:vary._id},function(err,result){
+           if(err)
+           {
+               return res.status(400).json({
+                   status:400,
+                   message:err.message
+               });
+           }
+           else if(result)
+           {
+               cibo.items.aggregate([
+                   {
+                       $lookup:
+                       {
+                           from:'favourites',
+                           let:
+                           {
+                               itemid:"$_id"
+                           },
+                           pipeline:
+                           [
+                               {
+                                   $match:
+                                   {
+                                       $expr:
+                                       {
+                                           $eq:["$$itemid","$item_id"]
+                                       }
+                                   }
+                               },
+                               {
+                                   $count:"status"
+                               }
+                           ],
+                           as:"trend"
+                       }
+                   },                                  
+                   {
+                       $unwind:"$trend"
+                   },
+                  
+                   {
+                       $lookup:
+                       {
+                           from:'users',
+                           let:
+                           {
+                               sellerid:"$seller_id"
+                           },
+                           pipeline:
+                           [
+                                {
+                                    $geoNear:
+                                    {
+                                        near:result.location,
+                                        distanceField:"dist.distance",
+                                        maxDistance:150*1000,
+                                        spherical: true
+                                    }
+                                },
+
+                               {
+                                   $match:
+                                   {
+                                       $expr:
+                                       {
+                                           $eq:["$$sellerid","$_id"]
+                                       }
+                                   }
+                               }
+                           ],
+                           as:"trend1"
+                       }
+                   },
+                   {
+                       $unwind:"$trend1"
+                   },
+                   {
+                       $addFields:
+                       {
+                           distance:"$trend1.dist.distance",
+                           count:"$trend.status"
+                       }
+                   },
+                   {
+                       $project:
+                       {
+                           item_name:1,
+                           picture:1,
+                           distance:{ $round: [ "$distance", 1] } ,
+                           count:1
+                       }
+                   },
+                   {
+                    $sort:{count:-1}
+                    }
+               ],function(err,success){
+                   if(err)
+                   {
+                       return res.status(400).json({
+                           status:400,
+                           message:err.message
+                       });
+                   }
+                   else if(success)
+                   {
+                       return res.status(200).json({
+                           status:200,
+                           data:success
+                       });
+                   }
+               });
+           }
+       });
    });
-  
 
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, function(){
