@@ -3357,6 +3357,9 @@
                    },
                    {
                     $sort:{count:-1}
+                    },
+                    { 
+                        $limit : 5
                     }
                ],function(err,success){
                    if(err)

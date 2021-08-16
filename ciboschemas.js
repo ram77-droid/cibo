@@ -9,6 +9,11 @@ var review_schema = new Schema({
         type: mongoose.Types.ObjectId,
         ref: "users"
     },
+    order_id:
+    {
+        type: mongoose.Types.ObjectId,
+        ref: "orders"
+    },
     rating:Number,
     message: String
 });
