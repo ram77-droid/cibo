@@ -182,8 +182,7 @@ var order_schema = new Schema({
         type:String,
         enum:["accept","reject","submit_order_delivery","submit_order_pickup","cancel"]
     },
-    item:[arr],
-    review:[review_schema],
+    item:[arr],   
     payment_method:String,
     created_at:Date
 });

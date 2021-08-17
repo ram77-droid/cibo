@@ -1087,8 +1087,9 @@
                     order_number:otpgen.generate(9,{ digits:true, alphabets:false, upperCase: false, specialChars: false }),                   
                     quantity:req.body.quantity,                    
                     item: req.body.item,
+                    grand_total:req.body.grand_total,
                     payment_method:req.body.payment_method,
-                    created_at:Date.now().toString()      
+                    created_at:Date.now()    
                 }
                 cibo.order.create(obj,function(err,result){
                     if(err)
@@ -1343,7 +1344,7 @@
                    user_id:result._id,
                    title:req.body.title,
                    description:req.body.description,
-                   created_at:Date.now()
+                   created_at:Date.now().toString()
                }
               cibo.blog.create(obj,function(err,success){
                   if(err)
@@ -1379,10 +1380,57 @@
            }
            else if(result)
            {
-               return res.status(200).json({
-                   status:200,
-                   data:result
-               });
+              cibo.blog.aggregate([
+                  {
+                      $lookup:
+                      {
+                          from:'users',
+                          let:
+                          {
+                              userid:"$user_id"
+                          },
+                          pipeline:
+                          [
+                              {
+                                  $match:
+                                  {
+                                      $expr:
+                                      {
+                                          $eq:["$$userid","$_id"]
+                                      }
+                                  }
+                              }
+                          ],
+                          as:"blogs"
+                      }
+                  },
+                  {
+                      $unwind:"$blogs"
+                  },
+                  {
+                      $project:
+                      {
+                          pictures:1,
+                          created_at:1,
+                          "blogs":"$blogs.name"
+                      }
+                  }
+              ],function(err,success){
+                  if(err)
+                  {
+                      return res.status(400).json({
+                          status:400,
+                          message:err.message
+                      });
+                  }
+                  else if(success)
+                  {
+                      return res.status(200).json({
+                          status:200,
+                          data:success
+                      });
+                  }
+              });
            }
        });
    });
@@ -1445,7 +1493,12 @@
                            $project:
                            {
                                item:1,
-                               deliverytype:1
+                               order_status:1,
+                               order_number:1,
+                              // total_pay:1,
+                              grand_total:1,
+                               deliverytype:1,
+                               created_at:1
                            }
                        }
                    ],function(err,success){
@@ -1489,7 +1542,8 @@
                                                 $and:
                                                 [
                                                     {$eq:["$$sellerid","$_id"] },                                                    
-                                                    {$eq:["$$userid",mongoose.Types.ObjectId(vary._id)]}
+                                                    {$eq:["$$userid",mongoose.Types.ObjectId(vary._id)]},
+                                                    //{$eq:["$review.user_id",mongoose.Types.ObjectId(vary._id)]}
                                                     // {$ne:["$$orderstatus","pending"]}
                                                 ]                                              
                                             }
@@ -1505,7 +1559,8 @@
                         {
                             $addFields:
                             {
-                                sellername:"$seller.name",                               
+                                sellername:"$seller.name",
+                                review:"$seller.review"                               
                             }
                         },
                         {
@@ -2493,11 +2548,10 @@
                });
            }
            else if(result)
-           {
-               console.log("id:",result._id);
+           {              
               req.body.review.forEach(element => {
                 
-                cibo.users.updateOne({_id:req.body.seller_id},{ $push:{review:{$each:[{user_id:result._id,rating:element.rating,message:element.message}]}}},function(err,success){
+                cibo.users.updateOne({_id:req.body.seller_id},{ $push:{review:{$each:[{user_id:result._id,order_id:element.order_id,rating:element.rating,message:element.message}]}}},function(err,success){
                     if(err)
                     {
                         return res.status(400).json({
