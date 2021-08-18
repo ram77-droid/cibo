@@ -998,6 +998,30 @@
             }
         });
     });
+    // seller home API
+    app.get('/seller_home',midleware.check,function(req,res){
+        token=req.headers.authorization.split(' ')[1];
+        var vary=jwt.verify(token,'ram');
+        cibo.users.findOne({_id:vary._id},function(err,result){
+            if(err)
+            {
+                return res.status(400).json({
+                    status:400,
+                    message:err.message
+                });
+            }
+            else if(result)
+            {
+                if(result.seller==true)
+                {
+                    return res.status(200).json({
+                        status:200,
+                        data:result.delivery_option
+                    });
+                }
+            }
+        });
+    });
 
     // seller view items API
     app.get('/viewitem',midleware.check,function(req,res){
