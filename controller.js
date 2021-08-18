@@ -1570,7 +1570,7 @@
                                 item:1, 
                                 review:1,                              
                                 order_number:1,
-                                total_pay:1,
+                                grand_total:1,
                                 sellername:1,                                
                             }
                         }
