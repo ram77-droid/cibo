@@ -971,7 +971,7 @@
     app.delete('/item_delete/:item_id',midleware.check,function(req,res){
         token=req.headers.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
-        cibo.items.findOneAndDelete({seller_id:vary._id,item_id:req.params.item_id},function(err,result){
+        cibo.items.findOneAndDelete({seller_id:vary._id,_id:req.params.item_id},function(err,result){
             if(err)
             {
                 return res.status(400).json({
