@@ -1984,7 +1984,7 @@
                   },
                   {
                       $project:
-                      {                         
+                      {    seller_id:1,                     
                           picture:1,
                           item_name:1,
                           quantity:1,
