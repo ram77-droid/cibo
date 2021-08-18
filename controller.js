@@ -966,6 +966,28 @@
             }
         });
     });
+
+    // delete item API
+    app.delete('/itwm_delete/:item_id',midleware.check,function(req,res){
+        token=req.headers.headers.authorization.split(' ')[1];
+        var vary=jwt.verify(token,'ram');
+        cibo.items.findOneAndDelete({seller_id:vary._id,item_id:req.params.item_id},function(err,result){
+            if(err)
+            {
+                return res.status(400).json({
+                    status:200,
+                    message:err.message
+                });
+            }
+            else if(result)
+            {            
+                    return res.status(200).json({
+                    status:200,
+                    message:"item deleted"
+                });
+            }
+        });
+    })
     // update delivery_type API
     app.post('/delivery_type',midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
