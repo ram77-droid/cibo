@@ -968,7 +968,7 @@
     });
 
     // delete item API
-    app.delete('/itwm_delete/:item_id',midleware.check,function(req,res){
+    app.delete('/item_delete/:item_id',midleware.check,function(req,res){
         token=req.headers.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
         cibo.items.findOneAndDelete({seller_id:vary._id,item_id:req.params.item_id},function(err,result){
