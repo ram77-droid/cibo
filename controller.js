@@ -442,7 +442,7 @@
                             }
                             else if(token_result)
                             {
-                                cibo.users.updateOne({email:req.body.email},{token:token_result},function(err,result){
+                                cibo.users.updateOne({email:req.body.email},{token:token_result},function(err,result1){
                                     if(err)
                                     {
                                         return res.status(400).json({
@@ -450,12 +450,13 @@
                                             message:err
                                         });
                                     }
-                                    else if(result)
+                                    else if(result1)
                                     {
                                         return res.status(200).json({
                                                 status:200,
                                                 message:"login successful ",
                                                 email:req.body.email,
+                                                name:result.name,
                                                 seller:seller,
                                                 token:token_result
                                             });
