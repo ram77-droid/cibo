@@ -1753,10 +1753,9 @@
                });
            }
            else if(result)
-            {     
-                console.log(result.delivery_option);               
+            {                                    
                 if(result.delivery_option=="delivery") 
-                {
+                {                    
                     cibo.items.aggregate([
                         {
                             $lookup:
@@ -1793,7 +1792,7 @@
                                                     //     $eq:["$$active",true]
                                                     // }, 
                                                     {
-                                                        $ne:["$delivery_option","pickup"]                                                      
+                                                        $ne:["$delivery_option",["pickup"]]                                                      
                                                         
                                                     }                                                                                       
                                                 ]
@@ -1818,7 +1817,7 @@
                             {
                                 picture:1,
                                 item_name:1,  
-                                distance:{ $round: [ "$distance", 1] }                                        
+                                distance:{ $round: [ "$distance", 1] }                                                                        
                             }
                         }                    
                        
@@ -1877,7 +1876,7 @@
                                                     //     $eq:["$$active",true]
                                                     // }, 
                                                     {
-                                                        $ne:["$delivery_option","delivery"]                                                      
+                                                        $ne:["$delivery_option",["delivery"]]                                                      
                                                         
                                                     }                                                                                       
                                                 ]
@@ -1902,7 +1901,7 @@
                             {
                                 "image":"$seller.image",                                
                                 "seller_name":"$seller.name", 
-                                distance:1                                         
+                                distance:{ $round: [ "$distance", 1] }                                          
                             }
                         }                    
                        
