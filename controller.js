@@ -297,7 +297,7 @@
     });
 
     // location API
-    app.post('/location',function(req,res){       
+    app.post('/location',midleware.check,function(req,res){       
         token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
         cibo.users.findOne({_id:vary._id},function(err,result){
@@ -335,6 +335,28 @@
                     });
                   }
               });
+            }
+        });
+    });
+
+    // view location API
+    app.get('/view_location',midleware.check,function(req,res){
+        token=req.headers.authorization.split(' ')[1];
+        var vary=jwt.verify(token,'ram');
+        cibo.users.findOne({_id:vary._id},function(err,result){
+            if(err)
+            {
+                return res.status(400).json({
+                    status:400,
+                    message:err.message
+                });
+            }
+            else if(result)
+            {
+                return res.status(200).json({
+                    status:200,
+                    address:result.delivery_address
+                });
             }
         });
     });
