@@ -1457,6 +1457,8 @@
                       $project:
                       {
                           pictures:1,
+                          title:1,
+                          description:1,
                           created_at:1,
                           "blogs":"$blogs.name"
                       }
