@@ -1753,7 +1753,8 @@
                });
            }
            else if(result)
-            {                    
+            {     
+                console.log(result.delivery_option);               
                 if(result.delivery_option=="delivery") 
                 {
                     cibo.items.aggregate([
