@@ -403,6 +403,7 @@
                                 return res.status(200).json({
                                     status:200,
                                     message:"login successful ",
+                                    email:req.body.email,
                                     seller:seller,
                                     token:token_result
                                 });
@@ -454,6 +455,7 @@
                                         return res.status(200).json({
                                                 status:200,
                                                 message:"login successful ",
+                                                email:req.body.email,
                                                 seller:seller,
                                                 token:token_result
                                             });
@@ -503,6 +505,7 @@
                                     return res.status(200).json({
                                         status:200,
                                         message:"login successful ",
+                                        email:req.body.email,
                                         seller:seller,
                                         token:token_result
                                     });
@@ -556,6 +559,7 @@
                                             return res.status(200).json({
                                                     status:200,
                                                     message:"login successful ",
+                                                    email:req.body.email,
                                                     seller:seller,
                                                     token:token_result
                                                 });
