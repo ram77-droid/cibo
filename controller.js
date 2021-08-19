@@ -1899,8 +1899,8 @@
                         {
                             $project:
                             {
-                                picture:1,
-                                item_name:1,  
+                                "image":"$seller.image",                                
+                                "seller_name":"$seller.name", 
                                 distance:1                                         
                             }
                         }                    
