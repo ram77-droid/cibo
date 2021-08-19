@@ -2362,7 +2362,8 @@
                         name:result.name,
                         image:result.image,
                         email:result.email,
-                        phone_no:result.phone_no
+                        phone_no:result.phone_no,
+                        bio:result.bio
                     }
                     return res.status(200).json({
                         status:200,
@@ -2377,7 +2378,8 @@
                         name:result.name,
                         image:result.image,
                         email:result.email,
-                        phone_no:result.phone_no
+                        phone_no:result.phone_no,
+                        bio:result.bio
                     }
                     return res.status(200).json({
                         status:200,                                       
