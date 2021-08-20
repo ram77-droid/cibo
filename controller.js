@@ -468,11 +468,24 @@
                 {
                     if(result.otp_status!=true)
                     {
-                        return res.status(200).json({
-                            status:200,
-                           otp_status:result.otp_status,
-                           token:result.token
-                        });
+                        if(result.delivery_address!=null)
+                        {
+                            return res.status(200).json({
+                                status:200,
+                               otp_status:result.otp_status,
+                               address:result.delivery_address,
+                               token:result.token
+                            });
+                        }
+                        else
+                        {
+                            return res.status(200).json({
+                                status:200,
+                               otp_status:result.otp_status,
+                               address:null,
+                               token:result.token
+                            });
+                        }                        
                     }
                       if(pass.test(req.body.password)==false || req.body.password==' ' || req.body.password==null)
                             {
@@ -1940,7 +1953,9 @@
                             {
                                 "image":"$seller.image",                                
                                 "seller_name":"$seller.name",
-                                "reviews":"$seller.review", 
+                                "reviews":"$seller.review",
+                                "lat":"$seller.lat",
+                                "long":"$seller.long",                                 
                                 distance:{ $round: [ "$distance", 1] }                                          
                             }
                         }                    
