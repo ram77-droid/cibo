@@ -2413,6 +2413,84 @@
        });
    });
 
+   // view seller profile API
+   app.get('/seller_profile',midleware.check,function(req,res){
+       token=req.headers.authorization.split(' ')[1];
+       var vary=jwt.verify(token,'ram');
+       cibo.users.findOne({_id:vary._id},function(err,result){
+           if(err)
+           {
+               return res.status(400).json({
+                   status:400,
+                   message:err.message
+               });
+           }
+           else if(result)
+           {
+               cibo.items.aggregate([
+                   {
+                       $lookup:
+                       {
+                           from:'users',
+                           let:
+                           {
+                               itemid:"$_id",
+                               sellerid:"$seller_id"
+                           },
+                           pipeline:
+                           [
+                               {
+                                   $match:
+                                   {
+                                       $expr:
+                                       {
+                                           $and:
+                                           [
+                                               {
+                                                   $eq:["$$itemid",req.params.item_id]
+                                               },
+                                               {
+                                                   $eq:["$$sellerid","$_id"]
+                                               }
+                                           ]
+                                       }
+                                   }
+                               }
+                           ],
+                           as:"profile"
+                       }
+                   },
+                   {
+                       $unwind:"$profile"
+                   },
+                   {
+                       $project:
+                       {
+                           "sellername":"$profile.name",
+                           "address":"$profile.delivery_address",
+                           "verified_seller":"$profile.seller"
+                       }
+                   }
+               ],function(err,success){
+                   if(err)
+                   {
+                       return res.status(400).json({
+                           status:400,
+                           message:err.message
+                       });
+                   }
+                   else if(success)
+                   {
+                       return res.status(200).json({
+                           status:200,
+                           data:success
+                       });
+                   }
+               });
+           }
+       });
+   });
+
    // delete favourite item API
    app.delete('/delete_favourite_item/:item_id',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
