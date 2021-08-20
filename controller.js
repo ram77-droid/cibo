@@ -239,22 +239,42 @@
         }
         else if(result)
         {
-            if(result.otp===req.body.otp)
-            {
-                return res.status(200).json({
-                    status:200,
-                    message:"otp matched"
-                });
-            }
-            else
-            {
+            // return res.status(200).json({
+            //     status:200,
+            //     message:"otp verified"
+            // });
+
+            // if(result.otp===req.body.otp)
+            // {
+            //     return res.status(200).json({
+            //         status:200,
+            //         message:"otp matched"
+            //     });
+            // }
+            // else
+            // {
+            //         return res.status(400).json({
+            //             status:400,
+            //             message:"otp doesn't matched"
+            //         });
+            // }
+            cibo.users.updateOne({_id:result._id},{otp_status:true},function(err,success){
+                if(err)
+                {
                     return res.status(400).json({
                         status:400,
-                        message:"otp doesn't matched"
+                        message:err.message
                     });
-            }
-        }
-        
+                }
+                else if(success)
+                {
+                    return res.status(200).json({
+                        status:200,
+                        message:"otp verified"
+                    });
+                }
+            });
+        }        
     });
     });
 
@@ -486,7 +506,7 @@
                                     {
                                         return res.status(200).json({
                                                 status:200,
-                                                message:"login successful ",
+                                                message:"login successful ",                                            
                                                 email:req.body.email,
                                                 name:result.name,
                                                 seller:seller,
