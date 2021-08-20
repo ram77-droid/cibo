@@ -442,7 +442,7 @@
                        }
                        else if(token_result)
                        {
-                           cibo.users.updateOne({_id:result._id},{token:token_result},function(err,result){
+                           cibo.users.updateOne({_id:result._id},{token:token_result},function(err,resultt){
                                if(err)
                                {
                                     return res.status(400).json({
@@ -450,11 +450,11 @@
                                         message:err
                                     });
                                }
-                               else if(result)
+                               else if(resultt)
                                {
                                 return res.status(200).json({
                                     status:200,
-                                    message:"login successful ",
+                                    message:"login successful ",                                   
                                     email:req.body.email,
                                     seller:seller,
                                     token:token_result
@@ -531,6 +531,7 @@
                                                 email:req.body.email,
                                                 name:result.name,
                                                 seller:seller,
+                                                otp_status:result.otp_status,
                                                 address:result.delivery_address,
                                                 token:token_result
                                             });
