@@ -3587,7 +3587,8 @@
                                    {
                                        $expr:
                                        {
-                                           $eq:["$$itemid","$item_id"]
+                                           $eq:["$$itemid","$item_id"],
+                                           $eq:["$status",true]
                                        }
                                    }
                                },
