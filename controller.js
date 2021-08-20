@@ -364,7 +364,7 @@
                 {
                     return res.status(200).json({
                         status:200,
-                        message:"address is not defined"
+                        message:null
                     });
                 }                
             }
