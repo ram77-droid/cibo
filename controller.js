@@ -1817,8 +1817,7 @@
                             {
                                 picture:1,
                                 item_name:1,  
-                                distance:{ $round: [ "$distance", 1] },
-                                "reviews":"$seller.review"                                                                        
+                                distance:{ $round: [ "$distance", 1] }                                                                                                        
                             }
                         }                    
                        
@@ -1901,7 +1900,8 @@
                             $project:
                             {
                                 "image":"$seller.image",                                
-                                "seller_name":"$seller.name", 
+                                "seller_name":"$seller.name",
+                                "reviews":"$seller.review", 
                                 distance:{ $round: [ "$distance", 1] }                                          
                             }
                         }                    
