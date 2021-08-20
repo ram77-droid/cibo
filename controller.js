@@ -2414,7 +2414,7 @@
    });
 
    // view seller profile API
-   app.get('/seller_profile/:item_id',midleware.check,function(req,res){
+   app.get('/seller_profile/:seller_id',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
        var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
@@ -2427,15 +2427,14 @@
            }
            else if(result)
            {
-               cibo.items.aggregate([
+               cibo.users.aggregate([
                    {
                        $lookup:
                        {
-                           from:'users',
+                           from:'items',
                            let:
                            {
-                               itemid:"$_id",
-                               sellerid:"$seller_id"
+                               id:"$_id"                               
                            },
                            pipeline:
                            [
@@ -2443,16 +2442,8 @@
                                    $match:
                                    {
                                        $expr:
-                                       {
-                                           $and:
-                                           [
-                                               {
-                                                   $eq:["$$itemid",req.params.item_id]
-                                               },
-                                               {
-                                                   $eq:["$$sellerid","$_id"]
-                                               }
-                                           ]
+                                       {                                        
+                                            $eq:["$_id",mongoose.Types.ObjectId(req.params.seller_id)]                                        
                                        }
                                    }
                                }
@@ -2466,9 +2457,13 @@
                    {
                        $project:
                        {
-                           "sellername":"$profile.name",
-                           "address":"$profile.delivery_address",
-                           "verified_seller":"$profile.seller"
+                        //    "sellername":"$profile.name",
+                        //    "address":"$profile.delivery_address",
+                        //    "verified_seller":"$profile.seller"
+                        name:1,
+                        delivery_address:1,
+                        seller:1,
+                        review:1
                        }
                    }
                ],function(err,success){
