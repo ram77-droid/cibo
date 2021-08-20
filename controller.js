@@ -269,7 +269,8 @@
                 {
                     return res.status(200).json({
                         status:200,
-                        message:"otp verified"
+                        message:"otp verified",
+                        otp_status:true
                     });
                 }
             });
@@ -465,7 +466,14 @@
                 }  
                 else if(req.body.type==="manual")
                 {
-                     if(pass.test(req.body.password)==false || req.body.password==' ' || req.body.password==null)
+                    if(result.otp_status!=true)
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:"please verify otp before login"
+                        });
+                    }
+                     else if(pass.test(req.body.password)==false || req.body.password==' ' || req.body.password==null)
                             {
                                 return res.status(400).json({
                                     status:400,
