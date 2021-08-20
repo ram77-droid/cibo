@@ -468,12 +468,13 @@
                 {
                     if(result.otp_status!=true)
                     {
-                        return res.status(400).json({
-                            status:400,
-                            message:"please verify otp before login"
+                        return res.status(200).json({
+                            status:200,
+                           otp_status:result.otp_status,
+                           token:result.token
                         });
                     }
-                     else if(pass.test(req.body.password)==false || req.body.password==' ' || req.body.password==null)
+                      if(pass.test(req.body.password)==false || req.body.password==' ' || req.body.password==null)
                             {
                                 return res.status(400).json({
                                     status:400,
@@ -517,6 +518,7 @@
                                                 email:req.body.email,
                                                 name:result.name,
                                                 seller:seller,
+                                                address:result.delivery_address,
                                                 token:token_result
                                             });
                                     }
@@ -2531,7 +2533,9 @@
                 {
                     return res.status(200).json({
                         status:200,
-                        data:success
+                        name:success.name,
+                        image:success.image,
+                        address:success.delivery_address
                     });
                 }
             });
