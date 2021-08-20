@@ -3641,7 +3641,7 @@
                    {
                        $addFields:
                        {
-                           distance:"$trend1.dist.distance",
+                           distance:"$trend1.dist.distance"/1000,
                            count:"$trend.status"
                        }
                    },
@@ -3651,7 +3651,8 @@
                            item_name:1,
                            picture:1,
                            distance:{ $round: [ "$distance", 1] } ,
-                           count:1
+                           count:1,
+                           "status":"$trend1.status"
                        }
                    },
                    {
