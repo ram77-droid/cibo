@@ -2451,7 +2451,7 @@
                     });
                } 
                else
-               {
+               {                   
                     obj={
                         name:result.name,
                         image:result.image,
