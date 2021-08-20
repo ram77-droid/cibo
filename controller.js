@@ -2411,9 +2411,10 @@
                     {
                         picture:1,
                         item_name:1,
+                        item_category:1,
                         price:1,
-                        seller_name:1,
-                       // "seller.name":1,
+                        description:1,
+                        seller_name:1,                      
                        distance:{ $round: [ "$distance", 1] }
                     }
                 }
