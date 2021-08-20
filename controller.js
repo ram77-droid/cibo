@@ -3643,6 +3643,36 @@
                        $unwind:"$trend1"
                    },
                    {
+                       $lookup:
+                       {
+                           from:'favourite',
+                           let:
+                           {
+                            item:"$_id"
+                           },
+                           pipeline:
+                           [
+                               {
+                                   $match:
+                                   {
+                                       $expr:
+                                       {
+                                           $and:[
+                                               {$eq:["$$item","$item_id"]},
+                                               {$eq:["$user_id",mongoose.Types.ObjectId(vary._id)]}
+                                           ]
+                                       }
+                                   }
+                               }
+                           ],
+                           as:"favour"
+                       
+                       }
+                   },
+                   {
+                       $unwind:"$favour"
+                   },
+                   {
                        $addFields:
                        {
                            distance:"$trend1.dist.distance",
@@ -3659,7 +3689,7 @@
                            description:1,
                            distance:{ $round: [ "$distance", 1] } ,
                            count:1,
-                           "userid":"$trend.user_id"                          
+                           "status":"$favour.status"                          
                        }
                    },
                    {
