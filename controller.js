@@ -3645,7 +3645,7 @@
                    {
                        $lookup:
                        {
-                           from:'favourite',
+                           from:'favourites',
                            let:
                            {
                             item:"$_id"
