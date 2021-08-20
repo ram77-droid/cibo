@@ -3645,16 +3645,16 @@
                            count:"$trend.status"
                        }
                    },
-                   {
-                       $project:
-                       {
-                           item_name:1,
-                           picture:1,
-                           distance:{ $round: [ "$distance", 1] } ,
-                           count:1,
-                           "status":"$trend.status"
-                       }
-                   },
+                //    {
+                //        $project:
+                //        {
+                //            item_name:1,
+                //            picture:1,
+                //            distance:{ $round: [ "$distance", 1] } ,
+                //            count:1,
+                //            "status":"$trend.status"
+                //        }
+                //    },
                    {
                     $sort:{count:-1}
                     },
