@@ -166,8 +166,7 @@
                             name:result.name,
                             email:result.email,
                             phone_no:result.phone_no,
-                            otp:result.otp
-                           
+                            otp_status:result.otp_status                           
                         }
                     jwt.sign(obj1,'ram',function(token_error,token_result){
                         if(token_error)
