@@ -3595,7 +3595,7 @@
                                    }
                                },
                                {
-                                   $count:"status"
+                                   $count:"item_id"
                                }
                            ],
                            as:"trend"
