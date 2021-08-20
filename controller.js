@@ -3589,8 +3589,8 @@
                                        {
                                            $and:[
                                             {$eq:["$$itemid","$item_id"]},
-                                            {$eq:["$status",true]},
-                                            {$eq:["$user_id",mongoose.Types.ObjectId(vary._id)]}
+                                            {$eq:["$status",true]}
+                                            //{$eq:["$user_id",mongoose.Types.ObjectId(vary._id)]}
                                            ]                                           
                                        }
                                    }
