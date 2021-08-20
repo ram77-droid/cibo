@@ -3645,7 +3645,7 @@
                        $addFields:
                        {
                            distance:"$trend1.dist.distance",
-                           count:"$trend.status"
+                           count:"$trend.item_id"
                        }
                    },
                    {
