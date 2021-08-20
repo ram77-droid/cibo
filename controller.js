@@ -2464,61 +2464,77 @@
            }
            else if(result)
            {
-               cibo.users.aggregate([
-                   {
-                       $lookup:
-                       {
-                           from:'items',
-                           let:
-                           {
-                               id:"$_id"                               
-                           },
-                           pipeline:
-                           [
-                               {
-                                   $match:
-                                   {
-                                       $expr:
-                                       {                                        
-                                            $eq:["$_id",mongoose.Types.ObjectId(req.params.seller_id)]                                        
-                                       }
-                                   }
-                               }
-                           ],
-                           as:"profile"
-                       }
-                   },
-                   {
-                       $unwind:"$profile"
-                   },
-                   {
-                       $project:
-                       {
-                        //    "sellername":"$profile.name",
-                        //    "address":"$profile.delivery_address",
-                        //    "verified_seller":"$profile.seller"
-                        name:1,
-                        delivery_address:1,
-                        seller:1,
-                        review:1
-                       }
-                   }
-               ],function(err,success){
-                   if(err)
-                   {
-                       return res.status(400).json({
-                           status:400,
-                           message:err.message
-                       });
-                   }
-                   else if(success)
-                   {
-                       return res.status(200).json({
-                           status:200,
-                           data:success
-                       });
-                   }
-               });
+            //    cibo.users.aggregate([
+            //        {
+            //            $lookup:
+            //            {
+            //                from:'items',
+            //                let:
+            //                {
+            //                    id:"$_id"                               
+            //                },
+            //                pipeline:
+            //                [
+            //                    {
+            //                        $match:
+            //                        {
+            //                            $expr:
+            //                            {                                        
+            //                                 $eq:["$_id",mongoose.Types.ObjectId(req.params.seller_id)]                                        
+            //                            }
+            //                        }
+            //                    }
+            //                ],
+            //                as:"profile"
+            //            }
+            //        },
+            //        {
+            //            $unwind:"$profile"
+            //        },
+            //        {
+            //            $project:
+            //            {
+            //             //    "sellername":"$profile.name",
+            //             //    "address":"$profile.delivery_address",
+            //             //    "verified_seller":"$profile.seller"
+            //             name:1,
+            //             delivery_address:1,
+            //             seller:1,
+            //             review:1
+            //            }
+            //        }
+            //    ],function(err,success){
+            //        if(err)
+            //        {
+            //            return res.status(400).json({
+            //                status:400,
+            //                message:err.message
+            //            });
+            //        }
+            //        else if(success)
+            //        {
+            //            return res.status(200).json({
+            //                status:200,
+            //                data:success
+            //            });
+            //        }
+            //    });
+            cibo.users.findOne({_id:req.params.seller_id},function(err,success){
+                if(err)
+                {
+                    return res.status(400).json({
+                        status:400,
+                        message:err.message
+                    });
+                }
+                else if(success)
+                {
+                    return res.status(200).json({
+                        status:200,
+                        data:success
+                    });
+                }
+            });
            }
        });
    });
