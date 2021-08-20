@@ -3587,8 +3587,10 @@
                                    {
                                        $expr:
                                        {
-                                           $eq:["$$itemid","$item_id"],
-                                           $eq:["$status",true]
+                                           $and:[
+                                            {$eq:["$$itemid","$item_id"]},
+                                            {$eq:["$status",true]}
+                                           ]                                           
                                        }
                                    }
                                },
