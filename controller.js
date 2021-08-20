@@ -3658,7 +3658,8 @@
                            price:1,
                            description:1,
                            distance:{ $round: [ "$distance", 1] } ,
-                           count:1,                          
+                           count:1,
+                           "userid":"$trend.user_id"                          
                        }
                    },
                    {
