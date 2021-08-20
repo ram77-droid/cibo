@@ -525,7 +525,22 @@
                                     }
                                     else if(result1)
                                     {
-                                        return res.status(200).json({
+                                        if(result.delivery_address==null)
+                                        {
+                                            return res.status(200).json({
+                                                status:200,
+                                                message:"login successful ",                                            
+                                                email:req.body.email,
+                                                name:result.name,
+                                                seller:seller,
+                                                otp_status:result.otp_status,
+                                                address:null,
+                                                token:token_result
+                                            });
+                                        }
+                                        else
+                                        {
+                                            return res.status(200).json({
                                                 status:200,
                                                 message:"login successful ",                                            
                                                 email:req.body.email,
@@ -535,6 +550,8 @@
                                                 address:result.delivery_address,
                                                 token:token_result
                                             });
+                                        }
+                                       
                                     }
                                 });                      
                             }
@@ -3658,6 +3675,28 @@
                            data:success
                        });
                    }
+               });
+           }
+       });
+   });
+
+   // info API
+   app.get('/info',midleware.check,function(req,res){
+       token=req.headers.authorization.split(' ')[1];
+       var vary=jwt.verify(token,'ram');
+       cibo.users.findOne({_id:vary._id},function(err,result){
+           if(err)
+           {
+               return res.status(400).json({
+                   status:400,
+                   message:err.message
+               });
+           }
+           else if(result)
+           {
+               return res.status(200).json({
+                   status:200,
+                   data:result
                });
            }
        });
