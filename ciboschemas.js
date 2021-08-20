@@ -21,7 +21,7 @@ var review_schema = new Schema({
 // user schema
 var user_schema = new Schema({
     name: String,
-    otp_status:Boolean,
+    otp_status:{type:Boolean,default:false},
     email:
     {
         type: String,
