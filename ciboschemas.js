@@ -81,7 +81,7 @@ var user_schema = new Schema({
         type: Array,        
         default:['delivery']
     },
-    delivery_address:String,
+    delivery_address:{type:String, default:null},
     schedule:
     {
         date: Date,

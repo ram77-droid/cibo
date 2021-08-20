@@ -3618,7 +3618,8 @@
                                         near:result.location,
                                         distanceField:"dist.distance",
                                         maxDistance:150*1000,
-                                        spherical: true
+                                        spherical: true,
+                                        distanceMultiplier: 0.001
                                     }
                                 },
 
