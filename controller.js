@@ -2414,7 +2414,7 @@
    });
 
    // view seller profile API
-   app.get('/seller_profile',midleware.check,function(req,res){
+   app.get('/seller_profile/:item_id',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
        var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
