@@ -353,10 +353,20 @@
             }
             else if(result)
             {
-                return res.status(200).json({
-                    status:200,
-                    address:result.delivery_address
-                });
+                if(result.delivery_address!=null)
+                {
+                    return res.status(200).json({
+                        status:200,
+                        address:result.delivery_address
+                    });
+                }
+                else
+                {
+                    return res.status(200).json({
+                        status:200,
+                        message:"address is not defined"
+                    });
+                }                
             }
         });
     });
