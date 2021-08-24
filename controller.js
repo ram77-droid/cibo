@@ -3651,36 +3651,36 @@
                    {
                        $unwind:"$trend1"
                    },
-                   {
-                       $lookup:
-                       {
-                           from:'favourites',
-                           let:
-                           {
-                            item:"$_id"
-                           },
-                           pipeline:
-                           [
-                               {
-                                   $match:
-                                   {
-                                       $expr:
-                                       {
-                                           $and:[
-                                               {$eq:["$$item","$item_id"]},
-                                               {$eq:["$user_id",mongoose.Types.ObjectId(vary._id)]}
-                                           ]
-                                       }
-                                   }
-                               }
-                           ],
-                           as:"favour"
+                //    {
+                //        $lookup:
+                //        {
+                //            from:'favourites',
+                //            let:
+                //            {
+                //             item:"$_id"
+                //            },
+                //            pipeline:
+                //            [
+                //                {
+                //                    $match:
+                //                    {
+                //                        $expr:
+                //                        {
+                //                            $and:[
+                //                                {$eq:["$$item","$item_id"]},
+                //                                {$eq:["$user_id",mongoose.Types.ObjectId(vary._id)]}
+                //                            ]
+                //                        }
+                //                    }
+                //                }
+                //            ],
+                //            as:"favour"
                        
-                       }
-                   },
-                   {
-                       $unwind:"$favour"
-                   },
+                //        }
+                //    },
+                //    {
+                //        $unwind:"$favour"
+                //    },
                    {
                        $addFields:
                        {
@@ -3698,7 +3698,7 @@
                            description:1,
                            distance:{ $round: [ "$distance", 1] } ,
                            count:1,
-                           "status":"$favour.status"                          
+                           //"status":"$favour.status"                          
                        }
                    },
                    {
