@@ -3701,7 +3701,7 @@
                            description:1,
                            distance:{ $round: [ "$distance", 1] } ,
                            count:1,
-                           //"status":"$favour.status"                          
+                           "status":"$favour.status"                          
                        }
                    },
                    {
