@@ -3651,36 +3651,39 @@
                    {
                        $unwind:"$trend1"
                    },
-                //    {
-                //        $lookup:
-                //        {
-                //            from:'favourites',
-                //            let:
-                //            {
-                //             item:"$_id"
-                //            },
-                //            pipeline:
-                //            [
-                //                {
-                //                    $match:
-                //                    {
-                //                        $expr:
-                //                        {
-                //                            $and:[
-                //                                {$eq:["$$item","$item_id"]},
-                //                                {$eq:["$user_id",mongoose.Types.ObjectId(vary._id)]}
-                //                            ]
-                //                        }
-                //                    }
-                //                }
-                //            ],
-                //            as:"favour"
+                   {
+                       $lookup:
+                       {
+                           from:'favourites',
+                           let:
+                           {
+                            item:"$_id"
+                           },
+                           pipeline:
+                           [
+                               {
+                                   $match:
+                                   {
+                                       $expr:
+                                       {
+                                           $and:[
+                                               {$eq:["$$item","$item_id"]},
+                                               {$eq:["$user_id",mongoose.Types.ObjectId(vary._id)]}
+                                           ]
+                                       }
+                                   }
+                               }
+                           ],
+                           as:"favour"
                        
-                //        }
-                //    },
-                //    {
-                //        $unwind:"$favour"
-                //    },
+                       }
+                   },
+                   {
+                       $unwind:{
+                           path:"$favour",
+                           preserveNullAndEmptyArrays: true
+                       }
+                   },
                    {
                        $addFields:
                        {
