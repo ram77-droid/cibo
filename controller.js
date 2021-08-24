@@ -3605,7 +3605,7 @@
                                    }
                                },
                                {
-                                   $count:"item_id"
+                                   $count:"status"
                                }
                            ],
                            as:"trend"
@@ -3685,7 +3685,7 @@
                        $addFields:
                        {
                            distance:"$trend1.dist.distance",
-                           count:"$trend.item_id"                           
+                           count:"$trend.status"                           
                        }
                    },
                    {
