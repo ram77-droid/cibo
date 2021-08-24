@@ -3604,9 +3604,9 @@
                                        }
                                    }
                                },
-                            //    {
-                            //        $count:"status"
-                            //    }
+                               {
+                                   $count:"status"
+                               }
                            ],
                            as:"trend"
                        }
