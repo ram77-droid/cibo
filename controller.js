@@ -1720,7 +1720,8 @@
                                 order_number:1,
                                 grand_total:1,
                                 created_at:1,
-                                sellername:1,                                
+                                sellername:1,
+                                payment_method:1                                
                             }
                         }
                     ],function(err,result1)
@@ -1744,6 +1745,40 @@
            }
        });
    });
+
+   //order detail API
+   app.get('/order_detail/:order_id',midleware.check,function(req,res){
+       token=req.headers.authorization.split(' ')[1];
+       var vary=jwt.verify(token,'ram');
+       cibo.users.findOne({_id:vary._id},function(err,result){
+           if(err)
+           {
+               return res.status(400).json({
+                   status:400,
+                   message:err
+               });
+           }
+           else if(result)
+           {
+               cibo.order.findOne({_id:req.params.order_id},function(err,success){
+                   if(err)
+                   {
+                        return res.status(400).json({
+                            status:400,
+                            message:err
+                        });
+                   }
+                   else if(success)
+                   {
+                    return res.status(200).json({
+                        status:200,
+                        data:success
+                    });
+                   }
+               })
+           }
+       })
+   })
 
    // accept order API
    app.post('/accept_order',midleware.check,function(req,res){
