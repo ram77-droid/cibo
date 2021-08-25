@@ -54,7 +54,7 @@ var user_schema = new Schema({
     },
     device_token: String,
     device_type: String,
-    token: String,
+    //token: String,
     image: String,
 
     // seller details
