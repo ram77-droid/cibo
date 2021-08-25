@@ -1732,6 +1732,7 @@
                             {
                                 order_status:1,
                                 item:1, 
+                                "quantity":"$item.quantity",
                                 review:1,                              
                                 order_number:1,
                                 grand_total:1,
