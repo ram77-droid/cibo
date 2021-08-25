@@ -2817,6 +2817,7 @@
                            quantity:1,
                            total_pay:1,
                            item:1,
+                           special_instruction:1,
                            username:1,
                            deliverytype:1                         
                        }

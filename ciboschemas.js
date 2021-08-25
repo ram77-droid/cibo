@@ -143,12 +143,12 @@ var arr= new Schema({
         type: mongoose.Types.ObjectId,
         ref: "items"
     },      
-    total_pay: String,
+    total_pay: NUmber,
     special_instruction:String,
     picture:String,
     item_name:String,
-    price:String,
-    quantity:String
+    price:Number,
+    quantity:Number
 });
 
 // order schema
