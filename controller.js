@@ -1669,16 +1669,34 @@
                else
                {                  
                   cibo.order.aggregate([
+                    { $addFields: { firstitem: { $first: "$item" } } },
+                    {
+                        $lookup:
+                        {
+                            from:"items",
+                            let: { itemid:"$firstitem.item_id"},
+                            pipeline:[
+                            {
+                            $match:{
+                            $expr:{
+                            $and:[
+                            {$eq:["$$itemid","$_id"]}
+                            ]
+                            }
+                            }
+                        }],
+                        as:"item"
+                     }
+                    },
+                    {$unwind:"$item"},
                         {
                             $lookup:
                             {
                                 from:'users',
                                 let:
                                 {
-                                    sellerid:"$seller_id",
-                                    orderid:"$order_number",
-                                    userid:"$user_id",
-                                    orderstatus:"$order_status"
+                                    sellerid:"$seller_id",                                   
+                                    userid:"$user_id",                                   
                                 },
                                 pipeline:
                                 [
@@ -1690,9 +1708,7 @@
                                                 $and:
                                                 [
                                                     {$eq:["$$sellerid","$_id"] },                                                    
-                                                    {$eq:["$$userid",mongoose.Types.ObjectId(vary._id)]},
-                                                    //{$eq:["$review.user_id",mongoose.Types.ObjectId(vary._id)]}
-                                                    // {$ne:["$$orderstatus","pending"]}
+                                                    {$eq:["$$userid",mongoose.Types.ObjectId(vary._id)]},                                                    
                                                 ]                                              
                                             }
                                         }
