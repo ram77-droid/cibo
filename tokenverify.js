@@ -24,16 +24,17 @@ module.exports.check= function check(req,res,next)
             }
             else if(result)
             {                
-               if(result.token==token)
-                {
-                    next();
-                }
-                else
-                {
-                    return res.json({
-                        message:"incorrect token"
-                    });
-                }                             
+            //    if(result.token==token)
+            //     {
+                    
+            //     }
+            //     else
+            //     {
+            //         return res.json({
+            //             message:"incorrect token"
+            //         });
+            //     }          
+            next();                   
             }
             else
             {
