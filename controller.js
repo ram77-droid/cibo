@@ -3868,7 +3868,7 @@
                                     {
                                         $and:[
                                           { $eq:["$$sellerid","$_id"] },
-                                          { $eq:["$$item1.user_id",mongoose.Types.ObjectId(req.params.user_id)]}
+                                          { $eq:["$item1.user_id",req.params.user_id]}
                                         ]                                        
                                     }
                                 }
@@ -3882,7 +3882,7 @@
                         order_status:1,
                         user_id:1,
                         order_number:1,
-                        item2:"$$item1.user_id",
+                        item2:"$item1.user_id",
                         wow:1
                     }
                 }
