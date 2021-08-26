@@ -3882,7 +3882,8 @@
                         order_status:1,
                         user_id:1,
                         order_number:1,
-                        item2:"$item1.user_id"
+                        item2:"$item1.user_id",
+                        wow:1
                     }
                 }
             ],function(err,success){
