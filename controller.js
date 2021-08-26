@@ -3842,14 +3842,15 @@
                         ],as:"reviewseller"
                     }
                 },
-                {
-                    $addFields:{item1:"$reviewseller.review"}
-                },                 
+                                
                 {
                         $unwind:{
                             path:"$reviewseller"
                            // preserveNullAndEmptyArrays: true
                         }
+                }, 
+                {
+                    $addFields:{item1:"$reviewseller.review"}
                 }, 
                 // {
                 //     $lookup:
