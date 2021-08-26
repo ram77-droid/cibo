@@ -3841,6 +3841,18 @@
                             }
                         ],as:"reviewseller"
                     }
+                },
+                {
+                    $addFields:{item1:"$reviewseller.review"}
+                },
+                {
+                    $project:
+                    {
+                        order_status:1,
+                        user_id:1,
+                        order_number:1,
+                        item1:1
+                    }
                 }
             ],function(err,success){
                 if(err)
