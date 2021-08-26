@@ -3852,31 +3852,34 @@
                 {
                     $addFields:{item1:"$reviewseller.review"}
                 }, 
-                // {
-                //     $lookup:
-                //     {
-                //         from:'users',
-                //         let:
-                //         {
-                //             sellerid:"$seller_id" 
-                //         },
-                //         pipeline:
-                //         [
-                //             {
-                //                 $match:
-                //                 {
-                //                     $expr:
-                //                     {
-                //                         $and:[
-                //                           { $eq:["$$sellerid","$_id"] },
-                //                           { $eq:["$item1.user_id",req.params.user_id]}
-                //                         ]                                        
-                //                     }
-                //                 }
-                //             }
-                //         ],as:"wow"
-                //     }
-                // },                           
+                {
+                    $lookup:
+                    {
+                        from:'users',
+                        let:
+                        {
+                            sellerid:"$seller_id" 
+                        },
+                        pipeline:
+                        [
+                            {
+                                $match:
+                                {
+                                    $expr:
+                                    {
+                                        $and:[
+                                          { $eq:["$$sellerid","$_id"] },
+                                          { $eq:["$item1.user_id",req.params.user_id]}
+                                        ]                                        
+                                    }
+                                }
+                            }
+                        ],as:"wow"
+                    }
+                },  
+                {
+                    $unwind:"$wow"
+                },                         
                 {
                     $project:
                     {
@@ -3884,7 +3887,8 @@
                         user_id:1,
                         order_number:1,
                         item2:"$item1.user_id",
-                        item1:1
+                        item1:1,
+                        wow:1
                     }
                 }
             ],function(err,success){
