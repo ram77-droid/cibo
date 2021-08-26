@@ -3850,7 +3850,16 @@
                   },
                 {
                     $addFields:{item1:"$reviewseller.review"}
-                },                
+                }, 
+                {
+                    $match:
+                    {
+                        $expr:
+                        {
+                            $eq:["$item1.user_id",req.params.user_id]
+                        }
+                    }
+                },               
                 {
                     $project:
                     {
