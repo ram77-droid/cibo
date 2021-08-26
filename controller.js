@@ -3851,31 +3851,31 @@
                             preserveNullAndEmptyArrays: true
                         }
                 }, 
-                {
-                    $lookup:
-                    {
-                        from:'users',
-                        let:
-                        {
-                            sellerid:"$seller_id" 
-                        },
-                        pipeline:
-                        [
-                            {
-                                $match:
-                                {
-                                    $expr:
-                                    {
-                                        $and:[
-                                          { $eq:["$$sellerid","$_id"] },
-                                          { $eq:["$item1.user_id",req.params.user_id]}
-                                        ]                                        
-                                    }
-                                }
-                            }
-                        ],as:"wow"
-                    }
-                },                           
+                // {
+                //     $lookup:
+                //     {
+                //         from:'users',
+                //         let:
+                //         {
+                //             sellerid:"$seller_id" 
+                //         },
+                //         pipeline:
+                //         [
+                //             {
+                //                 $match:
+                //                 {
+                //                     $expr:
+                //                     {
+                //                         $and:[
+                //                           { $eq:["$$sellerid","$_id"] },
+                //                           { $eq:["$item1.user_id",req.params.user_id]}
+                //                         ]                                        
+                //                     }
+                //                 }
+                //             }
+                //         ],as:"wow"
+                //     }
+                // },                           
                 {
                     $project:
                     {
