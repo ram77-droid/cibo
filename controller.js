@@ -3805,6 +3805,63 @@
        });
    });
 
+   // review get API
+   app.get('/get_review',midleware.check,function(req,res){
+    token=req.headers.authorization.split(' ')[1];
+    var vary=jwt.verify(token,'ram');
+    cibo.users.findOne({_id:vary._id},function(err,result){
+        if(err)
+        {
+            return res.status(400).json({
+                status:400,
+                message:err.message
+            });
+        }
+        else if(result)
+        {
+            cibo.order.aggregate([
+                {
+                    $lookup:
+                    {
+                        from:'users',
+                        let:
+                        {
+                            sellerid:"$seller_id"                           
+                        },
+                        pipeline:
+                        [
+                            {
+                                $match:
+                                {
+                                    $expr:
+                                    {
+                                        $eq:["$$sellerid","$_id"]
+                                    }
+                                }
+                            }
+                        ],as:"reviewseller"
+                    }
+                }
+            ],function(err,success){
+                if(err)
+                {
+                    return res.status(400).json({
+                        status:400,
+                        message:err
+                    });
+                }
+                else if(success)
+                {
+                    return res.status(200).json({
+                        status:200,
+                        data:success
+                    });
+                }
+            });
+        }
+   });
+});
+
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, function(){
         console.log('Server listening on port 5000');
