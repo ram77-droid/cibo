@@ -3850,13 +3850,7 @@
                   },
                 {
                     $addFields:{item1:"$reviewseller.review"}
-                },
-                {
-                    $match:
-                    {
-                         item1: { $elemMatch: { user_id:req.params.user_id } } 
-                    }
-                },
+                },                
                 {
                     $project:
                     {
