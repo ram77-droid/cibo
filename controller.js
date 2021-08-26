@@ -3843,8 +3843,11 @@
                     }
                 },
                 {
-                    $unwind:"$reviewseller"
-                },
+                    $unwind:{
+                        path:"$reviewseller",
+                           preserveNullAndEmptyArrays: true
+                    }
+                  },
                 {
                     $addFields:{item1:"$reviewseller.review"}
                 },
