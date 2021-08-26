@@ -3878,7 +3878,10 @@
                     }
                 },  
                 {
-                    $unwind:"$wow"
+                    $unwind:{
+                        path:"$wow",
+                        preserveNullAndEmptyArrays: true
+                    }
                 },                         
                 {
                     $project:
