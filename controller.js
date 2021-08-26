@@ -3806,7 +3806,7 @@
    });
 
    // review get API
-   app.get('/get_review',midleware.check,function(req,res){
+   app.get('/get_review/:user_id',midleware.check,function(req,res){
     token=req.headers.authorization.split(' ')[1];
     var vary=jwt.verify(token,'ram');
     cibo.users.findOne({_id:vary._id},function(err,result){
@@ -3843,7 +3843,16 @@
                     }
                 },
                 {
+                    $unwind:"$reviewseller"
+                },
+                {
                     $addFields:{item1:"$reviewseller.review"}
+                },
+                {
+                    $match:
+                    {
+                         item1: { $elemMatch: { user_id:req.params.user_id } } 
+                    }
                 },
                 {
                     $project:
