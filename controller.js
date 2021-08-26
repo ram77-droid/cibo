@@ -3747,6 +3747,7 @@
                    {
                        $project:
                        {
+                           seller_id:1,
                            item_name:1,
                            picture:1,
                            item_category:1,
