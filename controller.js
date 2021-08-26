@@ -3868,7 +3868,7 @@
                                     {
                                         $and:[
                                           { $eq:["$$sellerid","$_id"] },
-                                          { $eq:["$item1.user_id",req.params.user_id]}
+                                          { $eq:["$item1.user_id",mongoose.Types.ObjectId(req.params.user_id)]}
                                         ]                                        
                                     }
                                 }
