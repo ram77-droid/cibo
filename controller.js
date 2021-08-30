@@ -50,7 +50,8 @@
     });
      
     // sign up API
-    app.post('/signup',function(req,res){       
+    app.post('/signup',function(req,res){    
+        // finding if email or phone no already exists   
         cibo.users.findOne({$or:[
             {email:req.body.email},
             {phone_no:req.body.phone_no}
@@ -159,7 +160,8 @@
                     });
                 }  
                 else if(result)
-                {                    
+                {    
+                    // now user created                
                     obj1=
                         {
                             _id:result._id,
@@ -168,6 +170,7 @@
                             phone_no:result.phone_no,
                             otp_status:result.otp_status                           
                         }
+                        // here token is generated for user
                     jwt.sign(obj1,'ram',function(token_error,token_result){
                         if(token_error)
                         {
@@ -316,7 +319,7 @@
         });   
     });
 
-    // location API
+    // add location API
     app.post('/location',midleware.check,function(req,res){       
         token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
@@ -411,11 +414,8 @@
                 });
             }
             else if(result)
-            {   
-                var seller;
-                seller=result.seller;
-                console.log("seller:",seller);
-                           
+            {        
+                // if user login with facebook or google         
                  if(req.body.type=="facebook" &&  result.facebook_id!=null || req.body.type=="google" && result.google_id!=null)
                 {
                     if(result.google_id!=req.body.google_id || result.facebook_id!=req.body.facebook_id)
@@ -466,6 +466,7 @@
                 }  
                 else if(req.body.type==="manual")
                 {
+                    // if user not verified the otp
                     if(result.otp_status!=true)
                     {
                         if(result.delivery_address!=null)
@@ -495,7 +496,8 @@
                                     error:true
                                 });
                             } 
-                                
+                       
+                            // password get encrypted and matched with before encrypted password
                     req.body.password=md(req.body.password);
                     if(req.body.password==result.password)
                     {
@@ -566,6 +568,7 @@
                         });
                     }  
                 } 
+                // if user login first with manually and then login with facebook or google
                 else 
                 {
                     obj={
@@ -607,7 +610,8 @@
                         }
                     });
                 }                                                             
-            }  
+            } 
+            // if email is not present and user login with facebook or google 
             else
             {                
                 if(req.body.type=="google" || req.body.type=="facebook")
@@ -677,7 +681,7 @@
 
     // forget password API
     app.post('/forgetpassword',function(req,res){
-        
+        // checked if mail is in correct format or not
         if(mail.test(req.body.email)==false||req.body.email==''||req.body.email==null)
         {
             return res.status(400).json({
@@ -696,7 +700,8 @@
                     });
                 }
                 else if(result)
-                {                             
+                {    
+                    // used to sent mail on email                         
                     var transport = nodemailer.createTransport({
                         host: "smtp.mailtrap.io",
                         port: 2525,
@@ -732,8 +737,7 @@
     });
 
     // reset password API
-    app.post('/resetpassword',function(req,res){
-        console.log("email:",req.params.email);
+    app.post('/resetpassword',function(req,res){       
         
         if(pass.test(req.body.password)==false || req.body.password==' '|| req.body.password==null)
         {
@@ -827,7 +831,7 @@
         });
     });
 
-    // seller API
+    // become seller API
     app.post('/becomeseller',profile.any(),midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');       
@@ -840,106 +844,85 @@
                 });
             }
             else if(result)
-            {               
-                if(req.body.delivery_option==null)
-                {  
-                    if(req.body.pan_card_number.length!=10)
-                    {
-                        return res.status(400).json({
-                            status:400,
-                            message:"enter correct pan card number"
-                        });
-                    }
-                    else if(req.body.adhar_number.length!=12)
-                    {
-                        return res.status(400).json({
-                            status:400,
-                            message:"enter correct adhar card number"
-                        });
-                    }                 
-                    if(req.files.length!=4)
-                    {
-                        return res.status(400).json({
-                            status:400,
-                            message:"please add all images"
-                        });
-                    }
-                    var i=0;
-                    for(i;i<req.files.length;i++)
-                    {                      
-                        if(req.files[i].fieldname=="image")
-                        {
-                            image=req.files[i].location;
-                           // console.log("image:",image);
-                        }
-                        else if(req.files[i].fieldname=="pan_card_image")
-                        {
-                            pan_card_image=req.files[i].location;
-                            //console.log("pan:",pan_card_image);
-                        }
-                        else if(req.files[i].fieldname=="adhar_card_image_front")
-                        {
-                            adhar_card_image_front=req.files[i].location;
-                           // console.log("adhar front:",adhar_card_image_front);
-                        }
-                        else if(req.files[i].fieldname=="adhar_card_image_back")
-                        {
-                            adhar_card_image_back=req.files[i].location;
-                           // console.log("adhar back:",adhar_card_image_back);
-                        }
-                    }
-                    obj={
-                        image:image,
-                        pan_card_number:req.body.pan_card_number,
-                        pan_card_image:pan_card_image,
-                        adhar_number:req.body.adhar_number,
-                        adhar_card_image_front:adhar_card_image_front,
-                        adhar_card_image_back:adhar_card_image_back,
-                        physical_address:{
-                            street_name:req.body.street_name,
-                            city:req.body.city,
-                            state:req.body.state,
-                            pin:req.body.pin
-                        } ,
-                        seller:true                                                    
-                    }
-                    cibo.users.updateOne({_id:vary._id},obj,function(err,success){
-                        //console.log("object:",obj);
-                        if(err)
-                        {
-                            return res.status(400).json({
-                                status:400,
-                                message:err.message
-                            });
-                        }
-                        else if(success)
-                        {
-                            return res.status(200).json({
-                                status:200,
-                                message:"now you become seller"
-                            });                     
-                        }
+            {    
+                // checking whether all inputs are correct or not           
+                if(req.body.pan_card_number.length!=10)
+                {
+                    return res.status(400).json({
+                        status:400,
+                        message:"enter correct pan card number"
                     });
                 }
-                else
+                else if(req.body.adhar_number.length!=12)
                 {
-                    cibo.users.updateOne({_id:vary._id},{delivery_option:req.body.delivery_option},{runValidators:true},function(err,result){
-                        if(err)
-                        {
-                            return res.status(400).json({
-                                status:400,
-                                message:err.message
-                            });
-                        }
-                        else if(result)
-                        {
-                            return res.status(200).json({
-                                status:200,
-                                message:"now you become seller"
-                            });
-                        }
-                    }); 
-                }               
+                    return res.status(400).json({
+                        status:400,
+                        message:"enter correct adhar card number"
+                    });
+                }                 
+                if(req.files.length!=4)
+                {
+                    return res.status(400).json({
+                        status:400,
+                        message:"please add all images"
+                    });
+                }
+                var i=0;
+                for(i;i<req.files.length;i++)
+                {                      
+                    if(req.files[i].fieldname=="image")
+                    {
+                        image=req.files[i].location;
+                       // console.log("image:",image);
+                    }
+                    else if(req.files[i].fieldname=="pan_card_image")
+                    {
+                        pan_card_image=req.files[i].location;
+                        //console.log("pan:",pan_card_image);
+                    }
+                    else if(req.files[i].fieldname=="adhar_card_image_front")
+                    {
+                        adhar_card_image_front=req.files[i].location;
+                       // console.log("adhar front:",adhar_card_image_front);
+                    }
+                    else if(req.files[i].fieldname=="adhar_card_image_back")
+                    {
+                        adhar_card_image_back=req.files[i].location;
+                       // console.log("adhar back:",adhar_card_image_back);
+                    }
+                }
+                obj={
+                    image:image,
+                    pan_card_number:req.body.pan_card_number,
+                    pan_card_image:pan_card_image,
+                    adhar_number:req.body.adhar_number,
+                    adhar_card_image_front:adhar_card_image_front,
+                    adhar_card_image_back:adhar_card_image_back,
+                    physical_address:{
+                        street_name:req.body.street_name,
+                        city:req.body.city,
+                        state:req.body.state,
+                        pin:req.body.pin
+                    } ,
+                    seller:true                                                    
+                }
+                cibo.users.updateOne({_id:vary._id},obj,function(err,success){
+                    //console.log("object:",obj);
+                    if(err)
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:err.message
+                        });
+                    }
+                    else if(success)
+                    {
+                        return res.status(200).json({
+                            status:200,
+                            message:"now you become seller"
+                        });                     
+                    }
+                });             
             }
         });
     });
@@ -978,7 +961,7 @@
         });      
     });
 
-    // items API      
+    // add items API      
     app.post('/items',profile.any(),midleware.check,function(req,res){        
         token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
@@ -992,6 +975,7 @@
             }
             else if(result)
             {  
+                // checking if the added item status is active or inactive
                 if(req.body.active==false )
                 {
                     cibo.items.updateOne({_id:req.body._id},{active:req.body.active},function(err,success){
@@ -1030,6 +1014,7 @@
                         }
                     });
                 }
+                // here item get added
                 else
                 {
                     obj=
@@ -1068,6 +1053,7 @@
     app.delete('/item_delete/:item_id',midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
+        // find the item id and than delete it
         cibo.items.findOneAndDelete({seller_id:vary._id,_id:req.params.item_id},function(err,result){
             if(err)
             {
@@ -1089,6 +1075,7 @@
     app.post('/delivery_type',midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
+        // updating the delivery option
         cibo.users.findOneAndUpdate({_id:vary._id},{delivery_option:req.body.delivery_option},function(err,result){
             if(err)
             {
@@ -1158,6 +1145,7 @@
             {               
                 if(result.seller==true)
                 {
+                    // seller will see all items that he added
                         cibo.items.find({seller_id:vary._id},function(err,success){
                             if(err)
                             {
@@ -1234,6 +1222,7 @@
                     payment_method:req.body.payment_method,
                     created_at:Date.now()    
                 }
+                // order created here added by user
                 cibo.order.create(obj,function(err,result){
                     if(err)
                     {
@@ -1243,11 +1232,8 @@
                         });
                     }
                     else if(result)
-                    {
-                        // return res.status(200).json({
-                        //     status:200,
-                        //     message:"order placed"
-                        // });
+                    {    
+                        // here items get deleted from cart when order of that items get placed                   
                         cibo.cart.deleteMany({user_id:result.user_id},function(err,success1){
                             if(err)
                             {
@@ -1291,6 +1277,7 @@
                     user_id:result._id,
                     status:req.body.status
                 }
+                // item added as favourite for user
                 cibo.favourite.create(obj,function(err,result){
                     if(err)
                     {
@@ -1505,6 +1492,7 @@
                    description:req.body.description,
                    created_at:Date.now().toString()
                }
+               // blogs added here by user 
               cibo.blog.create(obj,function(err,success){
                   if(err)
                   {
@@ -1539,17 +1527,20 @@
            }
            else if(result)
            {
+               // viewing the blogs by user
+               // using aggregate for combination of data of two or more collections
               cibo.blog.aggregate([
                   {
-                      $lookup:
+                      $lookup:  // as one of the blog field is same as of user..so we use lookup
+                               // to get combined with that field
                       {
                           from:'users',
                           let:
                           {
-                              userid:"$user_id"
+                              userid:"$user_id" // here user_id is value of blog's user_id
                           },
-                          pipeline:
-                          [
+                          pipeline: // pipeline is used for multistaging  so that transform document
+                          [         // into aggregated results
                               {
                                   $match:
                                   {
@@ -1560,14 +1551,15 @@
                                   }
                               }
                           ],
-                          as:"blogs"
+                          as:"blogs" // all data of user collection is getting inside the blogs
                       }
                   },
                   {
-                      $unwind:"$blogs"
+                      $unwind:"$blogs" // deconstruct an array field
                   },
                   {
-                      $project:
+                      $project: // project is used for displaying data as required as
+                               // what we want to show
                       {
                           pictures:1,
                           title:1,
@@ -1577,7 +1569,7 @@
                       }
                   },
                   {
-                      $sort:{created_at:-1}
+                      $sort:{created_at:-1} // data get sorted by created_at field
                   }
               ],function(err,success){
                   if(err)
@@ -1613,7 +1605,8 @@
                });
            }
            else if(result)
-           {              
+           {    
+               // if user is seller then this work          
                if(result.seller==true)
                {
                    console.log("id:",result._id);
@@ -1626,7 +1619,7 @@
                                {
                                    id:"$seller_id"
                                },
-                               pipeline:
+                               pipeline: // multi staging
                                [
                                    {
                                        $match:
@@ -1648,7 +1641,7 @@
                            $unwind:"$order"
                        },
                        {
-                           $addFields:
+                           $addFields: // use addfield for adding new fields
                            {
                                deliverytype:"$order.delivery_option",                               
                            }
@@ -1658,8 +1651,7 @@
                            {
                                item:1,
                                order_status:1,
-                               order_number:1,
-                              // total_pay:1,
+                               order_number:1,                             
                               grand_total:1,
                                deliverytype:1,
                                created_at:1
@@ -1682,6 +1674,7 @@
                        }
                    });
                }
+               // if user is not seller
                else
                {                  
                   cibo.order.aggregate([
@@ -1792,6 +1785,7 @@
            }
            else if(result)
            {
+               // getting order detail from order_id
                cibo.order.findOne({_id:req.params.order_id},function(err,success){
                    if(err)
                    {
@@ -1826,25 +1820,27 @@
            }
            else if(result)
            {
+               // this is used for changing the status of the order
                var order;
                if(req.body.status=="accept")
                {
-                   order=req.body.status;
+                   order=req.body.status;// changed to accept
                }
                else if(req.body.status=="reject")
                {
-                   order=req.body.status;
+                   order=req.body.status; // changed to reject
                }
                else if(req.body.status=="cancel")
                {
-                   order="cancelled";
+                   order="cancelled"; // changed to cancelled
                }
                else if(req.body.status=="submit_order_delivery" || req.body.status=="submit_order_pickup")
                {
-                      order="completed";
+                      order="completed";  // changed to completed
                }
                else
                {
+                   // if any other status is coming from req then this will run 
                    return res.status(400).json({
                        status:400,
                        message:"status not valid"
@@ -1890,7 +1886,8 @@
                });
            }
            else if(result)
-            {                                    
+            {  
+                // if user's delivery option is delivery than he will see all items except pickup                                  
                 if(result.delivery_option=="delivery") 
                 {                    
                     cibo.items.aggregate([
@@ -1929,7 +1926,7 @@
                                                     //     $eq:["$$active",true]
                                                     // }, 
                                                     {
-                                                        $ne:["$delivery_option",["pickup"]]                                                      
+                                                        $ne:["$delivery_option",["pickup"]]  // here is condition work of not showing pickup                                                    
                                                         
                                                     }                                                                                       
                                                 ]
@@ -1979,6 +1976,7 @@
                         }
                     }).sort({_id:-1});
                 } 
+                 // if user's delivery option is pickup than he will see all items except delivery
                 else
                 {
                     cibo.items.aggregate([
@@ -2017,7 +2015,7 @@
                                                     //     $eq:["$$active",true]
                                                     // }, 
                                                     {
-                                                        $ne:["$delivery_option",["delivery"]]                                                      
+                                                        $ne:["$delivery_option",["delivery"]]   // condition                                                   
                                                         
                                                     }                                                                                       
                                                 ]
@@ -2088,7 +2086,7 @@
                });
            }
            else if(result)
-           {               
+           {     // findind if item id exists or not          
                cibo.cart.findOne({item_id:req.body.item_id},function(err,success){
                    if(err)
                    {
@@ -2115,9 +2113,11 @@
                                 });
                            }
                            else if(proceed)
-                           {                               
+                           {     
+                               // check req.seller and item added by seller is same or not                          
                                if(proceed.seller_id==req.body.seller_id)
                                {
+                                   // if quantity is not specified
                                    if(req.body.quantity==null || req.body.quantity==0)
                                    {
                                     return res.status(200).json({
@@ -2125,6 +2125,7 @@
                                         message:"enter quantity please"
                                     });
                                    }
+                                   // else
                                    obj={
                                            user_id:result._id,
                                            seller_id:req.body.seller_id,
@@ -2185,6 +2186,7 @@
            }
            else if(result)
            {
+               // viewing cart items added by user
               cibo.cart.aggregate([
                   {
                       $lookup:
