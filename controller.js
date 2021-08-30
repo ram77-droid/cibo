@@ -2102,6 +2102,14 @@
                            {                               
                                if(proceed.seller_id==req.body.seller_id)
                                {
+                                   if(req.body.quantity==null || req.body.quantity==0)
+                                   {
+                                    return res.status(200).json({
+                                        status:200,
+                                        message:"enter quantity please"
+                                    });
+                                   }
+                                   
                                    obj={
                                            user_id:result._id,
                                            seller_id:req.body.seller_id,
