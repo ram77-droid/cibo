@@ -2109,7 +2109,6 @@
                                         message:"enter quantity please"
                                     });
                                    }
-                                   
                                    obj={
                                            user_id:result._id,
                                            seller_id:req.body.seller_id,
