@@ -1244,10 +1244,26 @@
                     }
                     else if(result)
                     {
-                        return res.status(200).json({
-                            status:200,
-                            message:"order placed"
-                        });
+                        // return res.status(200).json({
+                        //     status:200,
+                        //     message:"order placed"
+                        // });
+                        cibo.cart.deleteMany({user_id:result.user_id},function(err,success1){
+                            if(err)
+                            {
+                                return res.status(400).json({
+                                    status:400,
+                                    message:err.message
+                                });
+                            }
+                            else if(success1)
+                            {
+                                return res.status(200).json({
+                                    status:200,
+                                    message:"order placed"
+                                });
+                            }
+                        })
                     }
                 });
                 
