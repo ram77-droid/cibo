@@ -2073,7 +2073,7 @@
            }
            else if(result)
            {               
-               cibo.cart.findOne({$or:[{item_id:req.body.item_id},{seller_id:req.body.seller_id}]},function(err,success){
+               cibo.cart.findOne({item_id:req.body.item_id},function(err,success){
                    if(err)
                    {
                        return res.status(400).json({
