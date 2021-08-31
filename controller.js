@@ -171,7 +171,7 @@
                             otp_status:result.otp_status                           
                         }
                         // here token is generated for user
-                    jwt.sign(obj1,'secret',function(token_error,token_result){
+                    jwt.sign(obj1,'ram',function(token_error,token_result){
                         if(token_error)
                         {
                             return res.status(400).json({
@@ -230,7 +230,7 @@
     // verifying OTP API
     app.post('/verify',function(req,res){
         token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'secret');
+        var vary=jwt.verify(token,'ram');
     cibo.users.findOne({_id:vary._id},function(err,result){
         if(err)
         {
@@ -285,7 +285,7 @@
     app.get('/resend',function(req,res){
 
         token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'secret');
+        var vary=jwt.verify(token,'ram');
         console.log('vary',vary);
         cibo.users.findOne({phone_no:vary.phone_no},function(err,success){
             if(err)
@@ -322,7 +322,7 @@
     // add location API
     app.post('/location',midleware.check,function(req,res){       
         token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'secret');
+        var vary=jwt.verify(token,'ram');
         cibo.users.findOne({_id:vary._id},function(err,result){
             if(err)
             {
@@ -365,7 +365,7 @@
     // view location API
     app.get('/view_location',midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'secret');
+        var vary=jwt.verify(token,'ram');
         cibo.users.findOne({_id:vary._id},function(err,result){
             if(err)
             {
@@ -433,7 +433,7 @@
                         facebook_id:req.body.facebook_id,
                         email:req.body.email
                      }
-                   jwt.sign(obj1,'secret',function(token_err,token_result){
+                   jwt.sign(obj1,'ram',function(token_err,token_result){
                        if(token_err)
                        {
                            return res.status(400).json({
@@ -507,7 +507,7 @@
                                 email:req.body.email,
                                 phone_no:result.phone_no                                
                              }
-                        jwt.sign(obj2,'secret',function(token_error,token_result)
+                        jwt.sign(obj2,'ram',function(token_error,token_result)
                         {
                             if(token_error)
                             {
@@ -579,7 +579,7 @@
                         google_id:req.body.google_id,
                         facebook_id:req.body.facebook_id
                     }
-                    jwt.sign(obj,'secret',function(token_error,token_result){
+                    jwt.sign(obj,'ram',function(token_error,token_result){
                         if(token_error)
                         {
                             return res.status(400).json({
@@ -634,7 +634,7 @@
                                 google_id:result.google_id,
                                 facebook_id:result.facebook_id
                             }
-                            jwt.sign(obj,'secret',function(token_error,token_result){
+                            jwt.sign(obj,'ram',function(token_error,token_result){
                                 if(token_error)
                                 {
                                     return res.status(400).json({
@@ -835,7 +835,7 @@
     // become seller API
     app.post('/becomeseller',profile.any(),midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'secret');       
+        var vary=jwt.verify(token,'ram');       
         cibo.users.findOne({_id:vary._id},function(err,result){
             if(err)
             {
@@ -930,7 +930,7 @@
     // bank details API
     app.post('/bank_detail',midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'secret');
+        var vary=jwt.verify(token,'ram');
         cibo.users.findOne({_id:vary._id},function(err,success){
             if(err)
             {
@@ -965,7 +965,7 @@
     // add items API      
     app.post('/items',profile.any(),midleware.check,function(req,res){        
         token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'secret');
+        var vary=jwt.verify(token,'ram');
         cibo.users.findOne({_id:vary._id},function(err,result){
             if(err)
             {
@@ -1053,7 +1053,7 @@
     // delete item API
     app.delete('/item_delete/:item_id',midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'secret');
+        var vary=jwt.verify(token,'ram');
         // find the item id and than delete it
         cibo.items.findOneAndDelete({seller_id:vary._id,_id:req.params.item_id},function(err,result){
             if(err)
@@ -1075,7 +1075,7 @@
     // update delivery_type API
     app.post('/delivery_type',midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'secret');
+        var vary=jwt.verify(token,'ram');
         // updating the delivery option
         cibo.users.findOneAndUpdate({_id:vary._id},{delivery_option:req.body.delivery_option},function(err,result){
             if(err)
@@ -1108,7 +1108,7 @@
     // seller home API
     app.get('/seller_home',midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'secret');
+        var vary=jwt.verify(token,'ram');
         cibo.users.findOne({_id:vary._id},function(err,result){
             if(err)
             {
@@ -1133,7 +1133,7 @@
     // seller view items API
     app.get('/viewitem',midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'secret');
+        var vary=jwt.verify(token,'ram');
         cibo.users.findOne({_id:vary._id},function(err,result){
             if(err)
             {
@@ -1202,7 +1202,7 @@
     // order API
     app.post('/order',midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'secret');
+        var vary=jwt.verify(token,'ram');
         cibo.users.findOne({_id:vary._id},function(err,result){
             if(err)
             {
@@ -1261,7 +1261,7 @@
     //favourite Items API
     app.post('/favourite',midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'secret');
+        var vary=jwt.verify(token,'ram');
        
         cibo.users.findOne({_id:vary._id},function(err,result){
             if(err)
@@ -1303,7 +1303,7 @@
     // edit profile API
     app.post('/edit_profile',profile.any(),midleware.check,function(req,res){
         token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'secret');
+        var vary=jwt.verify(token,'ram');
         cibo.users.findOne({_id:vary._id},function(err,result){
             if(err)
             {
@@ -1374,7 +1374,7 @@
    // change password API
    app.post('/change_password',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -1452,7 +1452,7 @@
    // schedule API
    app.post('/schedule',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.users.findOneAndUpdate({_id:vary._id},{schedule:req.body.schedule},function(err,result){
            if(err)
            {
@@ -1474,7 +1474,7 @@
    // Blog API
    app.post('/blog',profile.any(),midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -1517,7 +1517,7 @@
    // view blog API
    app.get('/view_blog',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.blog.find({user_id:vary._id},function(err,result){
            if(err)
            {
@@ -1595,7 +1595,7 @@
    // get order API
    app.get('/view_order',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');             
+       var vary=jwt.verify(token,'ram');             
        cibo.users.findOne({_id:vary._id},function(err,result){
           
            if(err)
@@ -1776,7 +1776,7 @@
    //order detail API
    app.get('/order_detail/:order_id',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -1811,7 +1811,7 @@
    // accept order API
    app.post('/accept_order',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.order.findOne({seller_id:vary._id,order_number:req.body.order_number},function(err,result){
            if(err)
            {
@@ -1878,7 +1878,7 @@
    // new item API
    app.get('/user_new_item',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -2078,7 +2078,7 @@
    // add_to_cart API
    app.post('/add_cart',midleware.check,function(req,res){      
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -2176,7 +2176,7 @@
    // view cart API
    app.get('/view_cart',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');  
+       var vary=jwt.verify(token,'ram');  
       
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
@@ -2256,46 +2256,12 @@
               });
            }
        });
-   });
-
-   // delete from cart API
-   app.delete('/delete_cart_item/:item_id',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');      
-      cibo.cart.find({user_id:vary._id},function(err,result){
-          if(err)
-          {
-              return res.status(400).json({
-                  status:400,
-                  message:err.message
-              });
-          }
-          else if(result)
-          {             
-              cibo.cart.deleteOne({item_id:req.params.item_id},function(err,success){
-                  if(err)
-                  {
-                    return res.status(400).json({
-                        status:400,
-                        message:err.message
-                    });
-                  }
-                  else if(success)
-                  {
-                    return res.status(200).json({
-                        status:200,
-                        message:"item deleted from your cart"
-                    });
-                  }
-              })
-          }
-      })
-   })
+   });  
 
    // view only item API
    app.get('/only_item/:item_id',midleware.check,function(req,res){
     token=req.headers.authorization.split(' ')[1];
-    var vary=jwt.verify(token,'secret');
+    var vary=jwt.verify(token,'ram');
     cibo.users.findOne({_id:vary._id},function(err,result){
         if(err)
         {
@@ -2392,7 +2358,7 @@
    // view favourite API
    app.get('/view_favourite',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -2520,7 +2486,7 @@
    // view profile API
    app.get('/view_profile',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -2576,7 +2542,7 @@
    // view seller profile API
    app.get('/seller_profile/:seller_id',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -2667,7 +2633,7 @@
    // delete favourite item API
    app.delete('/delete_favourite_item/:item_id',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.favourite.findOneAndDelete({user_id:vary._id,item_id:req.params.item_id},function(err,result){
            if(err)
            {
@@ -2705,7 +2671,7 @@
    // edit item API
    app.post('/edit_item',profile.any(),midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -2785,7 +2751,7 @@
    // view user by seller API
    app.get('/view_user',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -2872,7 +2838,7 @@
    // review API
    app.post('/review',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -2909,7 +2875,7 @@
    // view_review API
    app.get('/view_review',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -2931,7 +2897,7 @@
    // filter API
    app.post('/filter',midleware.check,function(req,res){
       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -3416,7 +3382,7 @@
    // add bio API
    app.post('/add_bio',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.users.findOneAndUpdate({_id:vary._id},{bio:req.body.bio},function(err,result){
            if(err)
            {
@@ -3438,7 +3404,7 @@
    // search API
    app.post('/search',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -3649,7 +3615,7 @@
    // trending items API
    app.get('/trending',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -3814,7 +3780,7 @@
    // info API
    app.get('/info',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'secret');
+       var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
