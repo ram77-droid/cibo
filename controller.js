@@ -546,8 +546,7 @@
                                                 status:200,
                                                 message:"login successful ",                                            
                                                 email:req.body.email,
-                                                name:result.name,
-                                                seller:seller,
+                                                name:result.name,                                                
                                                 otp_status:result.otp_status,
                                                 address:result.delivery_address,
                                                 token:token_result
