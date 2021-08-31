@@ -488,18 +488,18 @@
                             });
                         }                        
                     }
-                      if(pass.test(req.body.password)==false || req.body.password==' ' || req.body.password==null)
+
+                    else if(pass.test(req.body.password)==false || req.body.password==' ' || req.body.password==null)
                             {
                                 return res.status(400).json({
                                     status:400,
                                     message:"enter valid password",
                                     error:true
                                 });
-                            } 
-                       
+                            }                        
                             // password get encrypted and matched with before encrypted password
                     req.body.password=md(req.body.password);
-                    if(req.body.password==result.password)
+                   if(req.body.password==result.password)
                     {
                         obj2={
                                 _id:result._id,
