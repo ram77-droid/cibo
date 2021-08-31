@@ -414,7 +414,8 @@
                 });
             }
             else if(result)
-            {        
+            {   
+                seller=result.seller;                   
                 // if user login with facebook or google         
                  if(req.body.type=="facebook" &&  result.facebook_id!=null || req.body.type=="google" && result.google_id!=null)
                 {
@@ -546,7 +547,8 @@
                                                 status:200,
                                                 message:"login successful ",                                            
                                                 email:req.body.email,
-                                                name:result.name,                                                
+                                                name:result.name,
+                                                seller:seller,                                              
                                                 otp_status:result.otp_status,
                                                 address:result.delivery_address,
                                                 token:token_result
