@@ -1610,6 +1610,7 @@
                // if user is seller then this work          
                if(result.seller==true)
                {
+                  
                    console.log("id:",result._id);
                    cibo.order.aggregate([
                        {
@@ -1655,7 +1656,7 @@
                                order_number:1,                             
                               grand_total:1,
                                deliverytype:1,
-                               created_at:1
+                               created_at:1                               
                            }
                        }
                    ],function(err,success){
