@@ -963,8 +963,10 @@
     });
 
     // add items API      
-    app.post('/items',profile.any(),midleware.check,function(req,res){        
-        token=req.headers.authorization.split(' ')[1];
+    app.post('/items',profile.any(),midleware.check,function(req,res){    
+        try
+        {
+            token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
         cibo.users.findOne({_id:vary._id},function(err,result){
             if(err)
@@ -1050,6 +1052,7 @@
                     }
                     else
                     {
+                        console.log(req.files);
                         obj=
                         {
                             seller_id:result._id,
@@ -1080,8 +1083,16 @@
                     }                   
                 }                                      
             }
-        });
-    });
+        });   
+
+        }  catch(err)
+        {
+            console.log(err);
+        }   
+    });  
+        
+
+ 
 
     // delete item API
     app.delete('/item_delete/:item_id',midleware.check,function(req,res){
