@@ -1021,7 +1021,7 @@
                     obj=
                     {
                         seller_id:result._id,
-                        picture:req.files[0].location,
+                        //picture:req.files[0].location,
                         item_name:req.body.item_name,
                         item_category:req.body.item_category,
                         price:req.body.price,
