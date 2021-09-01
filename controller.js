@@ -1313,7 +1313,7 @@
                 });
             }
             else if(result)
-            {   
+            {   // if picture is updated
                 if(req.files)
                 {
                     obj={
@@ -1384,7 +1384,7 @@
                });
            }
            else if(result)
-           {
+           {// validate password
                if(pass.test(req.body.old_password)==false ||req.body.old_password==' '|| req.body.old_password==null)
                {
                    return res.status(400).json({
@@ -1416,6 +1416,7 @@
                             }
                             else
                             {
+                                // updating password
                                 req.body.new_password=md(req.body.new_password);
                                 cibo.users.updateOne({_id:vary._id},{password:req.body.new_password,confirm_password:req.body.new_password},function(err,success){
                                     if(err)
@@ -1541,13 +1542,13 @@
                               userid:"$user_id" // here user_id is value of blog's user_id
                           },
                           pipeline: // pipeline is used for multistaging  so that transform document
-                          [         // into aggregated results
+                          [         // into aggregated results..here matching the condition and give required result
                               {
                                   $match:
                                   {
                                       $expr:
                                       {
-                                          $eq:["$$userid","$_id"]
+                                          $eq:["$$userid","$_id"] // matching ids from blog and user collection
                                       }
                                   }
                               }
@@ -1619,7 +1620,7 @@
                                from:'users',
                                let:
                                {
-                                   id:"$seller_id"
+                                   id:"$seller_id" // value of seller id in order collection
                                },
                                pipeline: // multi staging
                                [
@@ -1630,7 +1631,7 @@
                                            {
                                             $and:
                                             [                                                                                                
-                                                {$eq:["$$id","$_id"]}                                               
+                                                {$eq:["$$id","$_id"]}   // matching ids from order and user collection                                            
                                             ]    
                                            }                                        
                                        }
@@ -1645,7 +1646,7 @@
                        {
                            $addFields: // use addfield for adding new fields
                            {
-                               deliverytype:"$order.delivery_option",                               
+                               deliverytype:"$order.delivery_option",    //delivery option of user                           
                            }
                        },
                        {
@@ -1680,7 +1681,7 @@
                else
                {                  
                   cibo.order.aggregate([
-                    { $addFields: { firstitem: { $first: "$item" } } },
+                    { $addFields: { firstitem: { $first: "$item" } } }, // for matching first item of item array
                     {
                         $lookup:
                         {
@@ -1712,7 +1713,7 @@
                                 pipeline:
                                 [
                                     {
-                                        $match:
+                                        $match: // matching conditions
                                         {
                                             $expr:
                                             {
@@ -1909,7 +1910,7 @@
                                         {
                                             near:result.location,
                                             distanceField:"dist.distance",
-                                            maxDistance:150*1000,
+                                            maxDistance:150*1000, // range
                                             spherical: true
                                         }
                                     },
@@ -1922,7 +1923,7 @@
                                                     {
                                                         $eq:["$$sellerid","$_id"]
                                                     },{
-                                                        $ne:["$$sellerid",mongoose.Types.ObjectId(vary._id)]
+                                                        $ne:["$$sellerid",mongoose.Types.ObjectId(vary._id)] // not to show item if user is seller
                                                     },
                                                     // {
                                                     //     $eq:["$$active",true]
@@ -1957,7 +1958,7 @@
                                 item_category:1,
                                 price:1,
                                 description:1,                                 
-                                distance:{ $round: [ "$distance", 1] }                                                                                                        
+                                distance:{ $round: [ "$distance", 1] } // for showing distance value and 1 value after dot                                                                                                       
                             }
                         }                    
                        
@@ -2017,7 +2018,7 @@
                                                     //     $eq:["$$active",true]
                                                     // }, 
                                                     {
-                                                        $ne:["$delivery_option",["delivery"]]   // condition                                                   
+                                                        $ne:["$delivery_option",["delivery"]]   // condition   just not showing delivery item                                                
                                                         
                                                     }                                                                                       
                                                 ]
@@ -2106,6 +2107,7 @@
                    }
                    else
                    {
+                       // find if item id is present in item collection
                        cibo.items.findOne({_id:req.body.item_id},function(err,proceed){
                            if(err)
                            {
@@ -2139,6 +2141,7 @@
                                            special_instruction:req.body.special_instruction,
                                            total_pay:req.body.price*req.body.quantity
                                        }
+                                       // adding item in cart
                                        cibo.cart.create(obj,function(err,success1){
                                            if(err)
                                            {
@@ -2204,7 +2207,7 @@
                                 {
                                     $expr:
                                     {                                      
-                                      $eq:["$$id","$_id"]
+                                      $eq:["$$id","$_id"] // matching same user ids of both collection
                                                                                                                           
                                     }
                                 }
@@ -2271,7 +2274,8 @@
             });
         }
         else if(result)
-         {                
+         {     
+             // showing item after clicking on item           
              cibo.items.aggregate([
                  {
                      $lookup:
@@ -2285,7 +2289,7 @@
                          pipeline:
                          [                                
                              {
-                                 $geoNear:
+                                 $geoNear:  // find seller in range
                                  {
                                      near:result.location,
                                      distanceField:"dist.distance",
@@ -2302,7 +2306,7 @@
                                              {
                                                  $eq:["$$sellerid","$_id"]
                                              },{
-                                                 $eq:["$$id",mongoose.Types.ObjectId(req.params.item_id)]
+                                                 $eq:["$$id",mongoose.Types.ObjectId(req.params.item_id)] // matching id with id comes in params
                                              }                                           
                                          ]
                                      }
@@ -2369,6 +2373,7 @@
            }
            else if(result)
            {
+               // viewing favourite items
                cibo.items.aggregate([
                    {
                        $lookup:
@@ -2386,10 +2391,10 @@
                                        {
                                            $and:[
                                                {
-                                                $eq:["$$id","$item_id"]  
+                                                $eq:["$$id","$item_id"]  // matching item id
                                                },
                                                {
-                                                   $eq:["$$userid","$user_id"]
+                                                   $eq:["$$userid","$user_id"] // matching user id
                                                }                                        
                                            ]
                                        }
@@ -2403,7 +2408,7 @@
                        $unwind:"$fav"
                    },
                    {
-                    $lookup:
+                    $lookup: // second lookup for finding saller name
                     {
                         from:"users",
                         let:
@@ -2497,6 +2502,7 @@
            }
            else if(result)
            {
+               // if user is seller than reviews are also showing
                if(result.seller==true)
                {
                     var sum=0,rating,rating1;         
@@ -2521,7 +2527,7 @@
                         data:obj
                     });
                } 
-               else
+               else // if user is not seller
                {                   
                     obj={
                         name:result.name,
@@ -2552,62 +2558,8 @@
                });
            }
            else if(result)
-           {
-            //    cibo.users.aggregate([
-            //        {
-            //            $lookup:
-            //            {
-            //                from:'items',
-            //                let:
-            //                {
-            //                    id:"$_id"                               
-            //                },
-            //                pipeline:
-            //                [
-            //                    {
-            //                        $match:
-            //                        {
-            //                            $expr:
-            //                            {                                        
-            //                                 $eq:["$_id",mongoose.Types.ObjectId(req.params.seller_id)]                                        
-            //                            }
-            //                        }
-            //                    }
-            //                ],
-            //                as:"profile"
-            //            }
-            //        },
-            //        {
-            //            $unwind:"$profile"
-            //        },
-            //        {
-            //            $project:
-            //            {
-            //             //    "sellername":"$profile.name",
-            //             //    "address":"$profile.delivery_address",
-            //             //    "verified_seller":"$profile.seller"
-            //             name:1,
-            //             delivery_address:1,
-            //             seller:1,
-            //             review:1
-            //            }
-            //        }
-            //    ],function(err,success){
-            //        if(err)
-            //        {
-            //            return res.status(400).json({
-            //                status:400,
-            //                message:err.message
-            //            });
-            //        }
-            //        else if(success)
-            //        {
-            //            return res.status(200).json({
-            //                status:200,
-            //                data:success
-            //            });
-            //        }
-            //    });
+           {    
+               // seeing seller profile       
             cibo.users.findOne({_id:req.params.seller_id},function(err,success){
                 if(err)
                 {
@@ -2643,23 +2595,7 @@
                });
            }
            else if(result)
-           {
-            //    cibo.favourite.deleteOne({item_id:req.body.item_id},function(err,success){
-            //        if(err)
-            //        {
-            //            return res.status(400).json({
-            //                status:400,
-            //                message:err.message
-            //            });
-            //        }
-            //        else if(success)
-            //        {
-            //            return res.status(200).json({
-            //                status:200,
-            //                message:"item deleted"
-            //            });
-            //        }
-            //    });
+           {           
                              return res.status(200).json({
                                status:200,
                                message:"item deleted"
@@ -2848,7 +2784,8 @@
                });
            }
            else if(result)
-           {              
+           {   
+               // push every time in review           
               req.body.review.forEach(element => {
                 
                 cibo.users.updateOne({_id:req.body.seller_id},{ $push:{review:{$each:[{user_id:result._id,order_id:element.order_id,rating:element.rating,message:element.message}]}}},function(err,success){
@@ -3419,7 +3356,7 @@
                {                
                  cibo.items.aggregate([                
                     {
-                        $match:
+                        $match: // matching a single letter if present in item name and category
                         {
                              $or:[
                              {item_name:{$regex:req.body.text,$options:"i"} },
@@ -3628,7 +3565,7 @@
            {
                cibo.items.aggregate([
                    {
-                       $lookup:
+                       $lookup: // for favourites item count
                        {
                            from:'favourites',
                            let:
@@ -3662,7 +3599,7 @@
                    },
                   
                    {
-                       $lookup:
+                       $lookup: // for seller info
                        {
                            from:'users',
                            let:
@@ -3698,7 +3635,7 @@
                        $unwind:"$trend1"
                    },
                    {
-                       $lookup:
+                       $lookup: // for like status of user
                        {
                            from:'favourites',
                            let:
