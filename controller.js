@@ -1995,6 +1995,9 @@
                             }
                         },
                         {
+                            $sort:{_id:-1}
+                        },
+                        {
                             $limit:5
                         }                    
                        
@@ -2013,7 +2016,7 @@
                                 data:success
                             });
                         }
-                    }).sort({_id:-1});
+                    });
                 } 
                  // if user's delivery option is pickup than he will see all items except delivery
                 else
