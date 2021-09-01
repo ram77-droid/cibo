@@ -1018,33 +1018,66 @@
                 // here item get added
                 else
                 {
-                    obj=
+                    if(req.files.length!=0)
                     {
-                        seller_id:result._id,
-                        //picture:req.files[0].location,
-                        item_name:req.body.item_name,
-                        item_category:req.body.item_category,
-                        price:req.body.price,
-                        description:req.body.description,
-                        special_notes:req.body.special_notes                   
-                    }                  
-                        cibo.items.create(obj,function(err,success){
-                            if(err)
-                            {
-                                return res.status(400).json({
-                                    status:400,
-                                    message:err.message
-                                });
-                            }
-                            else if(success)
-                            {
-                                
-                                return res.status(200).json({
-                                    status:200,
-                                    message:"item added successfully"
-                                });
-                            }
-                        });
+                        obj=
+                        {
+                            seller_id:result._id,
+                            picture:req.files[0].location,
+                            item_name:req.body.item_name,
+                            item_category:req.body.item_category,
+                            price:req.body.price,
+                            description:req.body.description,
+                            special_notes:req.body.special_notes                   
+                        }                  
+                            cibo.items.create(obj,function(err,success){
+                                if(err)
+                                {
+                                    return res.status(400).json({
+                                        status:400,
+                                        message:err.message
+                                    });
+                                }
+                                else if(success)
+                                {
+                                    
+                                    return res.status(200).json({
+                                        status:200,
+                                        message:"item added successfully"
+                                    });
+                                }
+                            });
+                    }
+                    else
+                    {
+                        obj=
+                        {
+                            seller_id:result._id,
+                            //picture:req.files[0].location,
+                            item_name:req.body.item_name,
+                            item_category:req.body.item_category,
+                            price:req.body.price,
+                            description:req.body.description,
+                            special_notes:req.body.special_notes                   
+                        }                  
+                            cibo.items.create(obj,function(err,success){
+                                if(err)
+                                {
+                                    return res.status(400).json({
+                                        status:400,
+                                        message:err.message
+                                    });
+                                }
+                                else if(success)
+                                {
+                                    
+                                    return res.status(200).json({
+                                        status:200,
+                                        message:"item added successfully"
+                                    });
+                                }
+                            });
+                    }                   
                 }                                      
             }
         });
