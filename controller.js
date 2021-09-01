@@ -1993,6 +1993,9 @@
                                 description:1,                                 
                                 distance:{ $round: [ "$distance", 1] } // for showing distance value and 1 value after dot                                                                                                       
                             }
+                        },
+                        {
+                            $limit:5
                         }                    
                        
                     ],function(err,success){
