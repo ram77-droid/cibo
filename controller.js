@@ -29,7 +29,7 @@
     });
     
     const fileFilter = (req, file, cb) => {
-    if (file.mimetype === "image/jpeg" || file.mimetype === "image/png" || file.mimetype === "image/jpg") {
+    if (file.mimetype === "image/jpeg" || file.mimetype === "image/png" || file.mimetype === "image/jpg" || file.mimetype === "image/JPEG" ||file.mimetype === "image/JPG" || file.mimetype === "image/PNG") {
     cb(null, true);
     } else {
     cb(new Error("Invalid file type, only JPEG and PNG is allowed!"), false);
@@ -966,6 +966,7 @@
     app.post('/items',profile.any(),midleware.check,function(req,res){    
         try
         {
+            console.log(req.files);
             token=req.headers.authorization.split(' ')[1];
         var vary=jwt.verify(token,'ram');
         cibo.users.findOne({_id:vary._id},function(err,result){
@@ -1022,6 +1023,7 @@
                 {
                     if(req.files.length!=0)
                     {
+                        console.log(req.files);
                         obj=
                         {
                             seller_id:result._id,
@@ -1052,7 +1054,7 @@
                     }
                     else
                     {
-                        console.log(req.files);
+                        
                         obj=
                         {
                             seller_id:result._id,
@@ -1087,6 +1089,7 @@
 
         }  catch(err)
         {
+            console.log(req.files);
             console.log(err);
         }   
     });  
