@@ -1755,7 +1755,8 @@
                                 let:
                                 {
                                     sellerid:"$seller_id",                                   
-                                    userid:"$user_id",                                   
+                                    userid:"$user_id",
+                                    orderid:"$_id"                                   
                                 },
                                 pipeline:
                                 [
@@ -1767,7 +1768,7 @@
                                                 $and:
                                                 [
                                                     {$eq:["$$sellerid","$_id"] },                                                    
-                                                    {$eq:["$$userid",mongoose.Types.ObjectId(vary._id)]},                                                    
+                                                    {$eq:["$$userid",mongoose.Types.ObjectId(vary._id)]},                                                                                                      
                                                 ]                                              
                                             }
                                         }
@@ -1777,7 +1778,7 @@
                             }
                         },
                         {
-                            $unwind:"$seller"
+                            $unwind:{path:"$seller",preserveNullAndEmptyArrays: true}
                         },                     
                         {
                             $addFields:
@@ -1790,13 +1791,21 @@
                             $project:
                             {
                                 order_status:1,
+                                _id:1,
                                 item:1,                                
-                                review:1,                              
+                                review:{
+                                    $filter: {
+                                    input: "$review",
+                                    as: "item",
+                                    cond: { $eq:["$$item.order_id","$_id"] }                                    
+                                     }
+                                    },                                                              
                                 order_number:1,
                                 grand_total:1,
                                 created_at:1,
                                 sellername:1,
-                                payment_method:1                                
+                                payment_method:1
+                                                             
                             }
                         }
                     ],function(err,result1)
@@ -1924,7 +1933,7 @@
    });
 
    // new item API
-   app.get('/user_new_item',midleware.check,function(req,res){
+   app.get('/user_new_item/:delivery_type',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1];
        var vary=jwt.verify(token,'ram');
        cibo.users.findOne({_id:vary._id},function(err,result){
@@ -1938,8 +1947,8 @@
            else if(result)
             {  
                 // if user's delivery option is delivery than he will see all items except pickup                                  
-                if(result.delivery_option=="delivery") 
-                {                    
+                if(req.params.delivery_type=="delivery") 
+                {                                      
                     cibo.items.aggregate([
                         {
                             $lookup:
