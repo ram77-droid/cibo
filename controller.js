@@ -65,7 +65,7 @@
                    
                 });
             }
-            else if(success)
+            else if(success) // if find then show this message
             {               
                 return res.status(400).json({
                     status:400,
@@ -75,7 +75,7 @@
             }
             // validations
             else 
-            {
+            {   // vallidation for all fields are empty
                 if(req.body.name==null || req.body.email==null || req.body.password==null || req.body.confirm_password==null || req.body.phone_no==null
                     || req.body.name==''||req.body.email==''|| req.body.password==''|| req.body.confirm_password==''||req.body.phone_no=='')
                 {
@@ -85,6 +85,7 @@
                         error:true
                     });
                 }
+                // for email is valid or not
                 else if(mail.test(req.body.email)==false||req.body.email==''||req.body.email==null)
                     {
                         return res.status(400).json({
@@ -93,6 +94,7 @@
                             error:true 
                         });
                     }
+                    // for password is valid or not
         else if(pass.test(req.body.password)==false||req.body.password==''||req.body.password==null)
         {
             return res.status(400).json({
@@ -101,7 +103,7 @@
                 error:true 
             });
         }
-
+          // for phone number is valid
         else if(phone.test(req.body.phone_no)==false||req.body.phone_no==''||req.body.phone_no==null)
         {
             return res.status(400).json({
@@ -110,6 +112,7 @@
                 error:true 
             });
         }
+        // for name is valid as it is not empty or null
         else if(req.body.name==''|| req.body.name==null || req.body.name==' ')
         {
             return res.status(400).json({
@@ -118,6 +121,7 @@
                 error:true 
             });
         }
+        // for password if it is empty or null
         else if(req.body.password==' '|| req.body.password==null)
         {
             return res.status(400).json({
@@ -126,6 +130,7 @@
                 error:true 
             });
         }
+         // for confirm password if it is empty or null
         else if(req.body.confirm_password==' '|| req.body.confirm_password==null)
         {
             return res.status(400).json({
@@ -134,12 +139,12 @@
                 error:true 
             });
         }
-       
+       // if everything is ok then this else will execute
         else
         {
-            req.body.password=md(req.body.password);
-        req.body.confirm_password=md(req.body.confirm_password);
-            if(req.body.password==req.body.confirm_password)
+            req.body.password=md(req.body.password); // encrypting password
+        req.body.confirm_password=md(req.body.confirm_password);// encrypting confirm password
+            if(req.body.password==req.body.confirm_password) // matching encrypted password if same then it will execute next
             {
                 obj={                   
                     name:req.body.name,
@@ -150,6 +155,7 @@
                     otp:otpgen.generate(6,{ digits:true, alphabets:false, upperCase: false, specialChars: false }),
                     }               
             console.log('object is',obj);
+            // creating user
             cibo.users.create(obj,function(err,result){
                 if(err)
                 {
@@ -214,7 +220,7 @@
             });          
             
             }
-            else
+            else  // if password and confirm password is not matched
             {
                 return res.status(400).json({
                     status:400,
@@ -229,9 +235,9 @@
 
     // verifying OTP API
     app.post('/verify',function(req,res){
-        token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'ram');
-    cibo.users.findOne({_id:vary._id},function(err,result){
+        token=req.headers.authorization.split(' ')[1]; // split token
+        var vary=jwt.verify(token,'ram'); // verify token
+    cibo.users.findOne({_id:vary._id},function(err,result){ // finding if user exists that comes in token
         if(err)
         {
                 return res.status(400).json({
@@ -260,7 +266,7 @@
             //             message:"otp doesn't matched"
             //         });
             // }
-            cibo.users.updateOne({_id:result._id},{otp_status:true},function(err,success){
+            cibo.users.updateOne({_id:result._id},{otp_status:true},function(err,success){ // updating the otp status if user verified the otp
                 if(err)
                 {
                     return res.status(400).json({
@@ -268,7 +274,7 @@
                         message:err.message
                     });
                 }
-                else if(success)
+                else if(success) // updation successful
                 {
                     return res.status(200).json({
                         status:200,
@@ -284,22 +290,22 @@
     // resend OTP API
     app.get('/resend',function(req,res){
 
-        token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'ram');
+        token=req.headers.authorization.split(' ')[1];// spliting token
+        var vary=jwt.verify(token,'ram'); // verifying token
         console.log('vary',vary);
-        cibo.users.findOne({phone_no:vary.phone_no},function(err,success){
-            if(err)
+        cibo.users.findOne({phone_no:vary.phone_no},function(err,success){ // finding phone number of the user
+            if(err) // if an error occur
             {
                 return res.status(400).json({
                     status:400,
                     message:err.message
                 });
             }
-            else if(success)
+            else if(success) // phone number finded then generating new otp for that number
             {
-                otp1=otpgen.generate(6,{ digits:true, alphabets:false, upperCase: false, specialChars: false });
+                otp1=otpgen.generate(6,{ digits:true, alphabets:false, upperCase: false, specialChars: false });// generating new otp
         
-                cibo.users.updateOne({otp:success.otp},{otp:otp1},function(err,result){
+                cibo.users.updateOne({otp:success.otp},{otp:otp1},function(err,result){ // updating otp
                     if(err)
                     {
                         return res.status(400).json({
@@ -307,7 +313,7 @@
                             message:err.message
                         }); 
                     }
-                    else if(result)
+                    else if(result)// otp updated
                     {
                         return res.status(200).json({
                             status:200,
@@ -321,9 +327,9 @@
 
     // add location API
     app.post('/location',midleware.check,function(req,res){       
-        token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'ram');
-        cibo.users.findOne({_id:vary._id},function(err,result){
+        token=req.headers.authorization.split(' ')[1];// spliting token
+        var vary=jwt.verify(token,'ram');// verifying token
+        cibo.users.findOne({_id:vary._id},function(err,result){ // finding user id in user collection
             if(err)
             {
                 return res.status(400).json({
@@ -331,18 +337,18 @@
                     message:err.message
                 });
             }
-            else if(result)
+            else if(result)  // after find updating the location or adding the location of the user
             {               
               obj={
                 location:{
                     type:"Point",
-                    coordinates:[parseFloat(req.body.long),parseFloat(req.body.lat)]
+                    coordinates:[parseFloat(req.body.long),parseFloat(req.body.lat)] // parse float parses the string and return number as number if character of string  is number
                 },
                 lat:parseFloat(req.body.lat),
                 long:parseFloat(req.body.long),
                 delivery_address:req.body.delivery_address
               }
-              cibo.users.updateOne({_id:vary._id},obj,function(err,result){
+              cibo.users.updateOne({_id:vary._id},obj,function(err,result){ // updating the user
                   if(err)
                   {
                     return res.status(400).json({
@@ -364,9 +370,9 @@
 
     // view location API
     app.get('/view_location',midleware.check,function(req,res){
-        token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'ram');
-        cibo.users.findOne({_id:vary._id},function(err,result){
+        token=req.headers.authorization.split(' ')[1]; // spliting token
+        var vary=jwt.verify(token,'ram'); // verifying token
+        cibo.users.findOne({_id:vary._id},function(err,result){  // finding user
             if(err)
             {
                 return res.status(400).json({
@@ -376,14 +382,14 @@
             }
             else if(result)
             {
-                if(result.delivery_address!=null)
+                if(result.delivery_address!=null)// if there is address of user in database
                 {
                     return res.status(200).json({
                         status:200,
                         address:result.delivery_address
                     });
                 }
-                else
+                else // if there is no address of user in database
                 {
                     return res.status(200).json({
                         status:200,
@@ -396,7 +402,7 @@
    
     // login API
     app.post('/login',function(req,res){
-
+        // validating email
         if(mail.test(req.body.email)==false || req.body.email==' ' || req.body.email==null)
         {
             return res.status(400).json({
@@ -404,7 +410,8 @@
                 message:"enter valid email",
                 error:true
             });
-        }         
+        }  
+        // finding email in user collection      
         cibo.users.findOne({email:req.body.email},function(err,result){
             if(err)
             {
@@ -415,17 +422,19 @@
             }
             else if(result)
             {   
-                seller=result.seller;                   
+                seller=result.seller; // if user is seller                   
                 // if user login with facebook or google         
                  if(req.body.type=="facebook" &&  result.facebook_id!=null || req.body.type=="google" && result.google_id!=null)
                 {
+                    // if user's google or facebook id is not matching with stored id
                     if(result.google_id!=req.body.google_id || result.facebook_id!=req.body.facebook_id)
                     {
                         return res.status(400).json({
                             status:400,
                             message:"id not matched"
                         });
-                    }  
+                    } 
+                    // if matched 
                   obj1={
                         _id:result._id,
                         type:req.body.type,
@@ -433,6 +442,7 @@
                         facebook_id:req.body.facebook_id,
                         email:req.body.email
                      }
+                     // signing new token
                    jwt.sign(obj1,'ram',function(token_err,token_result){
                        if(token_err)
                        {
@@ -443,6 +453,7 @@
                        }
                        else if(token_result)
                        {
+                           // updating token
                            cibo.users.updateOne({_id:result._id},{token:token_result},function(err,resultt){
                                if(err)
                                {
@@ -489,7 +500,8 @@
                             });
                         }                        
                     }
-
+                    
+                    // validating password
                     else if(pass.test(req.body.password)==false || req.body.password==' ' || req.body.password==null)
                             {
                                 return res.status(400).json({
@@ -500,13 +512,14 @@
                             }                        
                             // password get encrypted and matched with before encrypted password
                     req.body.password=md(req.body.password);
-                   if(req.body.password==result.password)
+                   if(req.body.password==result.password) // if matched
                     {
                         obj2={
                                 _id:result._id,
                                 email:req.body.email,
                                 phone_no:result.phone_no                                
                              }
+                             // signing token
                         jwt.sign(obj2,'ram',function(token_error,token_result)
                         {
                             if(token_error)
@@ -692,6 +705,7 @@
         }
         else 
         {
+            // finding email of user
             cibo.users.findOne({email:req.body.email},function(err,result){
                 if(err)
                 {
@@ -711,6 +725,7 @@
                           pass: "8e629cdfa30baf"
                         }
                       });
+                      // generating the link for the email
                       let url = '<a href="http://'+req.headers.host+'/pass/'+req.body.email+'">http://'+req.headers.host+'/pass'+req.body.email+'</a>';
                       console.log("url",url);
                    
@@ -721,12 +736,12 @@
                         html:'<p>We just acknowledged that you have requested to change your account password. You can change your password by clicking on the link below.</p>'+url+'<p>If you did not make this request. Please ignore this email.</p>'             
                         
                      });
-                     return res.status(200).json({
+                     return res.status(200).json({ // link sent on the email
                          status:200,
                          message:"link sent on your email"
                      });                   
                 }
-                else 
+                else // if email not found
                 {
                     return res.status(400).json({
                         status:400,
@@ -739,7 +754,7 @@
 
     // reset password API
     app.post('/resetpassword',function(req,res){       
-        
+        // validate password
         if(pass.test(req.body.password)==false || req.body.password==' '|| req.body.password==null)
         {
             return res.status(400).json({
@@ -747,6 +762,7 @@
                 message:"invalid password"
             });
         }
+        // validate email
         else if(mail.test(req.body.email)==false || req.body.email==' ' || req.body.email==null)
         {
             return res.status(400).json({
@@ -756,10 +772,13 @@
         }
         else
         {
+            // match password confirm password 
             if(req.body.password==req.body.confirm_password)
             {
+                // encrypt password
                 req.body.password=md(req.body.password);
             req.body.confirm_password=md(req.body.confirm_password);
+            // updating password for the user
                 cibo.users.findOneAndUpdate({email:req.body.email},{password:req.body.password,confirm_password:req.body.confirm_password},function(err,success){
                     if(err)
                     {
@@ -768,14 +787,14 @@
                             message:err.message
                         });
                     }
-                    else if(success)
+                    else if(success) // password updated
                     {
                         return res.status(200).json({
                             status:200,
                             message:"password reset"
                         });
                     }
-                    else
+                    else // if email not found
                     {
                         return res.status(400).json({
                             status:400,
@@ -784,7 +803,7 @@
                     }
                 });
             }
-            else
+            else // if password doesn't match
             {
                 return res.status(400).json({
                     status:400,
@@ -796,13 +815,14 @@
     });
 
     //password screen API
-    app.get('/pass/:email',function(req,res){                  
+    app.get('/pass/:email',function(req,res){  
+        // rendering ejs file                
         ejs.renderFile('./password.ejs',{},{},function(err,template){
             if(err)
             {
                 throw err;
             }
-            else
+            else // on success
             {
                 res.end(template);
             }
@@ -834,10 +854,12 @@
 
     // become seller API
     app.post('/becomeseller',profile.any(),midleware.check,function(req,res){
-        token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'ram');       
+        token=req.headers.authorization.split(' ')[1]; // spliting token
+        var vary=jwt.verify(token,'ram');  // verifying token  
+
+        // finding user in user collection   
         cibo.users.findOne({_id:vary._id},function(err,result){
-            if(err)
+            if(err)// if any error occur
             {
                 return res.status(400).json({
                     status:400,
@@ -846,7 +868,8 @@
             }
             else if(result)
             {    
-                // checking whether all inputs are correct or not           
+                // checking whether all inputs are correct or not  
+                // validating pan card number         
                 if(req.body.pan_card_number.length!=10)
                 {
                     return res.status(400).json({
@@ -854,44 +877,52 @@
                         message:"enter correct pan card number"
                     });
                 }
+                // validating adhar card number
                 else if(req.body.adhar_number.length!=12)
                 {
                     return res.status(400).json({
                         status:400,
                         message:"enter correct adhar card number"
                     });
-                }                 
-                if(req.files.length!=4)
+                }  
+                // files contains all pictues uploaded by user               
+                if(req.files.length!=4) // if all pictures are not uploaded by user
                 {
                     return res.status(400).json({
                         status:400,
                         message:"please add all images"
                     });
                 }
+                // else this code will work
                 var i=0;
                 for(i;i<req.files.length;i++)
-                {                      
+                {       
+                    // getting image in image field               
                     if(req.files[i].fieldname=="image")
                     {
                         image=req.files[i].location;
                        // console.log("image:",image);
                     }
+                    // getting pan card image in pan card field
                     else if(req.files[i].fieldname=="pan_card_image")
                     {
                         pan_card_image=req.files[i].location;
                         //console.log("pan:",pan_card_image);
                     }
+                    // getting adhar_card_image_front in adhar_card_image_front field
                     else if(req.files[i].fieldname=="adhar_card_image_front")
                     {
                         adhar_card_image_front=req.files[i].location;
                        // console.log("adhar front:",adhar_card_image_front);
                     }
+                    // getting adhar_card_image_back in adhar_card_image_back field
                     else if(req.files[i].fieldname=="adhar_card_image_back")
                     {
                         adhar_card_image_back=req.files[i].location;
                        // console.log("adhar back:",adhar_card_image_back);
                     }
                 }
+                // getting all feilds in an object
                 obj={
                     image:image,
                     pan_card_number:req.body.pan_card_number,
@@ -907,6 +938,7 @@
                     } ,
                     seller:true                                                    
                 }
+                // updating the user as seller
                 cibo.users.updateOne({_id:vary._id},obj,function(err,success){
                     //console.log("object:",obj);
                     if(err)
@@ -916,7 +948,7 @@
                             message:err.message
                         });
                     }
-                    else if(success)
+                    else if(success) // now user become seller
                     {
                         return res.status(200).json({
                             status:200,
@@ -929,8 +961,9 @@
     });
     // bank details API
     app.post('/bank_detail',midleware.check,function(req,res){
-        token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'ram');
+        token=req.headers.authorization.split(' ')[1]; // spliting token
+        var vary=jwt.verify(token,'ram'); // verifying token
+        // finding user
         cibo.users.findOne({_id:vary._id},function(err,success){
             if(err)
             {
@@ -941,7 +974,7 @@
             }
             else if(success)
             {
-               // console.log("detailL:",req.body.bank_details.account_number);
+               // updating user's bank details
                 cibo.users.updateOne({_id:vary._id},{bank_details:req.body.bank_details},function(err,result){
                     if(err)
                     {
@@ -950,7 +983,7 @@
                             message:err.message
                         });
                     }
-                    else if(result)
+                    else if(result) // bank details updated
                     {
                         return res.status(200).json({
                             status:200,
@@ -963,12 +996,14 @@
     });
 
     // add items API      
-    app.post('/items',profile.any(),midleware.check,function(req,res){    
+    app.post('/items',profile.any(),midleware.check,function(req,res){ 
+        // using try catch in this for catching front end error   
         try
         {
             console.log(req.files);
-            token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'ram');
+            token=req.headers.authorization.split(' ')[1]; // spliting token
+        var vary=jwt.verify(token,'ram');  // verifying token
+        // finding user
         cibo.users.findOne({_id:vary._id},function(err,result){
             if(err)
             {
@@ -979,9 +1014,14 @@
             }
             else if(result)
             {  
+                // if item is already there and seller just want to activate or deactivate the item
+
                 // checking if the added item status is active or inactive
+
+                // if seller want to deactivate the item
                 if(req.body.active==false )
                 {
+                    // updating status of item in false
                     cibo.items.updateOne({_id:req.body._id},{active:req.body.active},function(err,success){
                         if(err)
                         {
@@ -1001,6 +1041,7 @@
                 } 
                 else if( req.body.active==true)
                 {
+                    // updating status of item as true
                     cibo.items.updateOne({_id:req.body._id},{active:req.body.active},function(err,success){
                         if(err)
                         {
@@ -1021,6 +1062,7 @@
                 // here item get added
                 else
                 {
+                    // if seller providing image for the item
                     if(req.files.length!=0)
                     {
                         console.log(req.files);
@@ -1033,7 +1075,8 @@
                             price:req.body.price,
                             description:req.body.description,
                             special_notes:req.body.special_notes                   
-                        }                  
+                        }          
+                        // item get added in item collection        
                             cibo.items.create(obj,function(err,success){
                                 if(err)
                                 {
@@ -1052,9 +1095,9 @@
                                 }
                             });
                     }
+                    // if seller add item without picture
                     else
-                    {
-                        
+                    {                        
                         obj=
                         {
                             seller_id:result._id,
@@ -1064,7 +1107,8 @@
                             price:req.body.price,
                             description:req.body.description,
                             special_notes:req.body.special_notes                   
-                        }                  
+                        }  
+                        // item added in collection                
                             cibo.items.create(obj,function(err,success){
                                 if(err)
                                 {
@@ -1092,25 +1136,23 @@
             console.log(req.files);
             console.log(err);
         }   
-    });  
-        
-
- 
+    });   
 
     // delete item API
     app.delete('/item_delete/:item_id',midleware.check,function(req,res){
-        token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'ram');
+        token=req.headers.authorization.split(' ')[1]; // spliting token
+        var vary=jwt.verify(token,'ram');  // verifying token
+
         // find the item id and than delete it
         cibo.items.findOneAndDelete({seller_id:vary._id,_id:req.params.item_id},function(err,result){
-            if(err)
+            if(err) // if an error occur
             {
                 return res.status(400).json({
                     status:200,
                     message:err.message
                 });
             }
-            else if(result)
+            else if(result) // item deleted successfully
             {            
                     return res.status(200).json({
                     status:200,
@@ -1121,9 +1163,10 @@
     })
     // update delivery_type API
     app.post('/delivery_type',midleware.check,function(req,res){
-        token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'ram');
-        // updating the delivery option
+        token=req.headers.authorization.split(' ')[1]; // spliting token
+        var vary=jwt.verify(token,'ram'); // verifying token
+
+        // updating the delivery option by seller
         cibo.users.findOneAndUpdate({_id:vary._id},{delivery_option:req.body.delivery_option},function(err,result){
             if(err)
             {
@@ -1134,6 +1177,7 @@
             }
             else if(result)
             {    
+                // only this type can be stored
                 if(req.body.delivery_option=="delivery" || req.body.delivery_option=="pickup" || req.body.delivery_option=="delivery,pickup")
                 {
                     return res.status(200).json({
@@ -1141,7 +1185,7 @@
                         message:"delivery type updated"
                     });
                 }
-                else
+                else // if something else is in req then this error
                 {
                     return res.status(400).json({
                         status:400,
@@ -1154,8 +1198,10 @@
     });
     // seller home API
     app.get('/seller_home',midleware.check,function(req,res){
-        token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'ram');
+        token=req.headers.authorization.split(' ')[1]; // spliting token
+        var vary=jwt.verify(token,'ram');  // verifying token
+
+        // finding user
         cibo.users.findOne({_id:vary._id},function(err,result){
             if(err)
             {
@@ -1166,8 +1212,10 @@
             }
             else if(result)
             {
+                // if user is seller 
                 if(result.seller==true)
                 {
+                    // showing the current delivery option of seller
                     return res.status(200).json({
                         status:200,
                         data:result.delivery_option
@@ -1179,8 +1227,9 @@
 
     // seller view items API
     app.get('/viewitem',midleware.check,function(req,res){
-        token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'ram');
+        token=req.headers.authorization.split(' ')[1]; // spliting token
+        var vary=jwt.verify(token,'ram'); // verifying token
+        // finding user
         cibo.users.findOne({_id:vary._id},function(err,result){
             if(err)
             {
@@ -1190,7 +1239,7 @@
                 });
             }
             else if(result)
-            {               
+            {           // if seller    
                 if(result.seller==true)
                 {
                     // seller will see all items that he added
@@ -1210,46 +1259,17 @@
                                 });
                             }
                         });
-                } 
-                // else
-                // {
-                //     cibo.items.findOne({_id:req.body.item_id},function(err,result){
-                //         if(err)
-                //         {
-                //             return res.status(400).json({
-                //                 status:400,
-                //                 message:err.message
-                //             });
-                //         }
-                //         else if(result)
-                //         {
-                //             cibo.items.find({seller_id:result.seller_id},function(err,proceed){
-                //                 if(err)
-                //                 {
-                //                     return res.status(400).json({
-                //                         status:400,
-                //                         message:err.message
-                //                     });
-                //                 }
-                //                 else if(proceed)
-                //                 {
-                //                     return res.status(200).json({
-                //                         status:200,
-                //                         data:proceed
-                //                     });
-                //                 }
-                //             });
-                //         }
-                //     });
-                // }              
+                }                              
             }
         });
     });
 
     // order API
     app.post('/order',midleware.check,function(req,res){
-        token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'ram');
+        token=req.headers.authorization.split(' ')[1]; // spliting token
+        var vary=jwt.verify(token,'ram'); // verifying token
+
+        // finding user
         cibo.users.findOne({_id:vary._id},function(err,result){
             if(err)
             {
@@ -1259,7 +1279,7 @@
                 });
             }
             else if(result)
-            {                
+            {     // getting fields in obj and generating order number             
                 obj={
                     user_id:result._id,
                     seller_id:req.body.seller_id, 
@@ -1307,9 +1327,9 @@
 
     //favourite Items API
     app.post('/favourite',midleware.check,function(req,res){
-        token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'ram');
-       
+        token=req.headers.authorization.split(' ')[1]; // spliting token
+        var vary=jwt.verify(token,'ram'); // verifying token
+       // finding user
         cibo.users.findOne({_id:vary._id},function(err,result){
             if(err)
             {
@@ -1320,6 +1340,7 @@
             }
             else if(result)
             {
+                // getting status from user
                 obj={
                     item_id:req.body.item_id,                   
                     user_id:result._id,
@@ -1334,7 +1355,7 @@
                             message:err.message
                         });
                     }
-                    else if(result)
+                    else if(result) // added favourite item
                     {
                         return res.status(200).json({
                             status:200,
@@ -1349,8 +1370,9 @@
 
     // edit profile API
     app.post('/edit_profile',profile.any(),midleware.check,function(req,res){
-        token=req.headers.authorization.split(' ')[1];
-        var vary=jwt.verify(token,'ram');
+        token=req.headers.authorization.split(' ')[1];  //spliting token
+        var vary=jwt.verify(token,'ram');  // verifying token
+        // finding user
         cibo.users.findOne({_id:vary._id},function(err,result){
             if(err)
             {
@@ -1360,7 +1382,8 @@
                 });
             }
             else if(result)
-            {   // if picture is updated
+            {   
+                // if picture is updated
                 if(req.files)
                 {
                     obj={
@@ -1387,6 +1410,7 @@
                         }
                     });
                 }  
+                // if picture is not updated
                 else
                 {
                     obj={
@@ -1420,8 +1444,9 @@
 
    // change password API
    app.post('/change_password',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
+       token=req.headers.authorization.split(' ')[1]; // spliting token
+       var vary=jwt.verify(token,'ram');  // verifying token
+       // finding user
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -1439,6 +1464,7 @@
                        message:"invalid password"
                    });
                }
+               // validate new password
                else if(pass.test(req.body.new_password)==false || req.body.new_password==' '|| req.body.new_password==null)
                {
                     return res.status(400).json({
@@ -1449,11 +1475,14 @@
 
                else
                {
-                    console.log("old pass:",req.body.old_password);
+                   // console.log("old pass:",req.body.old_password);
+                   // encrypt old password 
                     req.body.old_password=md(req.body.old_password);
-    
+                   
+                    // if old password matched
                     if(req.body.old_password==result.password)
-                    {                   
+                    {      
+                        // if new password is null or empty or not valid             
                         if(pass.test(req.body.new_password)==false||req.body.new_password==''||req.body.new_password==null)
                             {
                                 return res.status(400).json({
@@ -1463,7 +1492,7 @@
                             }
                             else
                             {
-                                // updating password
+                                // updating new password
                                 req.body.new_password=md(req.body.new_password);
                                 cibo.users.updateOne({_id:vary._id},{password:req.body.new_password,confirm_password:req.body.new_password},function(err,success){
                                     if(err)
@@ -1479,12 +1508,11 @@
                                             status:200,
                                             message:"password updated"
                                         });
-                                    }
-    
+                                    }    
                                 })
                             }
                     }
-                    else
+                    else // if old password is not matched
                     {
                         return res.status(400).json({
                             status:400,
@@ -1499,8 +1527,10 @@
 
    // schedule API
    app.post('/schedule',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
+       token=req.headers.authorization.split(' ')[1]; // spliting token
+       var vary=jwt.verify(token,'ram'); // verifying token
+
+       // finding and updating user's schedule
        cibo.users.findOneAndUpdate({_id:vary._id},{schedule:req.body.schedule},function(err,result){
            if(err)
            {
@@ -1521,8 +1551,10 @@
 
    // Blog API
    app.post('/blog',profile.any(),midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
+       token=req.headers.authorization.split(' ')[1]; // spliting token
+       var vary=jwt.verify(token,'ram'); // verifying token
+
+       // finding user
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -1533,6 +1565,7 @@
            }
            else if(result)
            {
+               // getting all fields in obj
                obj=
                {
                    pictures:req.files[0].location,
@@ -1550,7 +1583,7 @@
                         message:err.message
                     });
                   }
-                  else if(success)
+                  else if(success) // blog added 
                   {
                     return res.status(200).json({
                         status:200,
@@ -1564,8 +1597,10 @@
 
    // view blog API
    app.get('/view_blog',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
+       token=req.headers.authorization.split(' ')[1]; // spliting token
+       var vary=jwt.verify(token,'ram'); // verifying token
+
+       // finding user id in blog collection
        cibo.blog.find({user_id:vary._id},function(err,result){
            if(err)
            {
@@ -1641,9 +1676,11 @@
    });
 
    // get order API
-   app.get('/view_order',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');             
+   app.get('/view_order/:type',midleware.check,function(req,res){
+       token=req.headers.authorization.split(' ')[1]; // spliting token
+       var vary=jwt.verify(token,'ram');     // verifying token
+
+       // finding user
        cibo.users.findOne({_id:vary._id},function(err,result){
           
            if(err)
@@ -1656,10 +1693,8 @@
            else if(result)
            {    
                // if user is seller then this work          
-               if(result.seller==true)
-               {
-                  
-                   console.log("id:",result._id);
+               if(req.params.type=="seller" && result.seller==true)
+               {                  
                    cibo.order.aggregate([
                        {
                            $lookup:
@@ -1672,7 +1707,7 @@
                                pipeline: // multi staging
                                [
                                    {
-                                       $match:
+                                       $match: // matching condtions
                                        {
                                            $expr:
                                            {
@@ -1732,24 +1767,24 @@
                     {
                         $lookup:
                         {
-                            from:"items",
-                            let: { itemid:"$firstitem.item_id"},
+                            from:"items", // from item collection
+                            let: { itemid:"$firstitem.item_id"}, // first item id 
                             pipeline:[
                             {
                             $match:{
                             $expr:{
                             $and:[
-                            {$eq:["$$itemid","$_id"]}
+                            {$eq:["$$itemid","$_id"]} // mstching item ids
                             ]
                             }
                             }
                         }],
-                        as:"orderitem"
+                        as:"orderitem" // return as orderitem
                      }
                     },
-                    {$unwind:"$orderitem"},
+                    {$unwind:"$orderitem"}, // unwinding orderitem
                         {
-                            $lookup:
+                            $lookup:  // second lookup with users coillection
                             {
                                 from:'users',
                                 let:
@@ -1767,37 +1802,36 @@
                                             {
                                                 $and:
                                                 [
-                                                    {$eq:["$$sellerid","$_id"] },                                                    
-                                                    {$eq:["$$userid",mongoose.Types.ObjectId(vary._id)]},                                                                                                      
+                                                    {$eq:["$$sellerid","$_id"] }, // matchind seller ids                                                   
+                                                    {$eq:["$$userid",mongoose.Types.ObjectId(vary._id)]},  // matching user ids                                                                                                    
                                                 ]                                              
                                             }
                                         }
                                     }
                                 ],
-                                as:"seller"                                
+                                as:"seller"  // return as seller                               
                             }
                         },
                         {
-                            $unwind:{path:"$seller",preserveNullAndEmptyArrays: true}
-                        },                     
+                            $unwind:{path:"$seller",preserveNullAndEmptyArrays: true} // unwinding seller
+                        },                  // preserve null empty array is true if data is not find as conditions but want to show rest data
                         {
                             $addFields:
                             {
-                                sellername:"$seller.name",
+                                sellername:"$seller.name", // adding fields
                                 review:"$seller.review"                               
                             }
                         },
                         {
-                            $project:
+                            $project: // projecting data as we want to show
                             {
-                                order_status:1,
-                                _id:1,
+                                order_status:1,                                
                                 item:1,                                
                                 review:{
-                                    $filter: {
+                                    $filter: { // filtering the review data
                                     input: "$review",
                                     as: "item",
-                                    cond: { $eq:["$$item.order_id","$_id"] }                                    
+                                    cond: { $eq:["$$item.order_id","$_id"] }   // matching order id                                 
                                      }
                                     },                                                              
                                 order_number:1,
@@ -1832,8 +1866,10 @@
 
    //order detail API
    app.get('/order_detail/:order_id',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
+       token=req.headers.authorization.split(' ')[1]; // spliting token
+       var vary=jwt.verify(token,'ram');  // verifying token
+
+       // finding user
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -1867,8 +1903,10 @@
 
    // accept order API
    app.post('/accept_order',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
+       token=req.headers.authorization.split(' ')[1]; // spliting token
+       var vary=jwt.verify(token,'ram'); // verifying token
+
+       //  finding order data where seller id and order number matched
        cibo.order.findOne({seller_id:vary._id,order_number:req.body.order_number},function(err,result){
            if(err)
            {
@@ -1905,6 +1943,7 @@
                        message:"status not valid"
                    });
                }
+               // updating the order status
                cibo.order.updateOne({order_number:result.order_number},{order_status:order},function(err,success){
                    if(err)
                    {
@@ -1933,210 +1972,197 @@
    });
 
    // new item API
-   app.get('/user_new_item/:delivery_type',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
-       cibo.users.findOne({_id:vary._id},function(err,result){
-           if(err)
-           {
-               return res.status(400).json({
-                   status:400,
-                   message:err.message
-               });
-           }
-           else if(result)
-            {  
-                // if user's delivery option is delivery than he will see all items except pickup                                  
-                if(req.params.delivery_type=="delivery") 
-                {                                      
-                    cibo.items.aggregate([
-                        {
-                            $lookup:
-                            {
-                                from:"users",
-                                let:
-                                {
-                                    sellerid:"$seller_id",
-                                    active:"$active"                                   
-                                },
-                                pipeline:
-                                [                                
-                                    {
-                                        $geoNear:
-                                        {
-                                            near:result.location,
-                                            distanceField:"dist.distance",
-                                            maxDistance:150*1000, // range
-                                            spherical: true
-                                        }
-                                    },
-                                    {
-                                        $match:
-                                        {
-                                            $expr:
-                                            {
-                                                $and:[
-                                                    {
-                                                        $eq:["$$sellerid","$_id"]
-                                                    },{
-                                                        $ne:["$$sellerid",mongoose.Types.ObjectId(vary._id)] // not to show item if user is seller
-                                                    },
-                                                    // {
-                                                    //     $eq:["$$active",true]
-                                                    // }, 
-                                                    {
-                                                        $ne:["$delivery_option",["pickup"]]  // here is condition work of not showing pickup                                                    
-                                                        
-                                                    }                                                                                       
-                                                ]
-                                            }
-                                        }
-                                    }
-                                ],
-                                as:"seller"                            
-                            }
-                        },
-                        {
-                            $unwind:"$seller"
-                        },
-                        {
-                          $addFields:
+   app.get('/user_new_item/:delivery_type',midleware.check,function(req,res){       
+
+      // if user's delivery option is delivery than he will see all items except pickup                                  
+      if(req.params.delivery_type=="delivery") 
+      {                                      
+          cibo.items.aggregate([
+              {
+                  $lookup:
+                  {
+                      from:"users",
+                      let:
+                      {
+                          sellerid:"$seller_id",
+                          active:"$active"                                   
+                      },
+                      pipeline:
+                      [                                
                           {
-                              distance:"$seller.dist.distance"
+                              $geoNear:
+                              {
+                                  near:req.user_loaction,
+                                  distanceField:"dist.distance",
+                                  maxDistance:150*1000, // range
+                                  spherical: true
+                              }
+                          },
+                          {
+                              $match:
+                              {
+                                  $expr:
+                                  {
+                                      $and:[
+                                          {
+                                              $eq:["$$sellerid","$_id"]
+                                          },{
+                                              $ne:["$$sellerid",mongoose.Types.ObjectId(req.current_user_id)] // not to show item if user is seller
+                                          },
+                                          // {
+                                          //     $eq:["$$active",true]
+                                          // }, 
+                                          {
+                                              $ne:["$delivery_option",["pickup"]]  // here is condition work of not showing pickup                                                    
+                                              
+                                          }                                                                                       
+                                      ]
+                                  }
+                              }
                           }
-                        },
-                        {
-                            $project:
-                            {
-                                seller_id:1,
-                                item_name:1,
-                                picture:1,
-                                item_category:1,
-                                price:1,
-                                description:1,                                 
-                                distance:{ $round: [ "$distance", 1] } // for showing distance value and 1 value after dot                                                                                                       
-                            }
-                        },
-                        {
-                            $sort:{_id:-1}
-                        },
-                        {
-                            $limit:5
-                        }                    
-                       
-                    ],function(err,success){
-                        if(err)
-                        {
-                            return res.status(400).json({
-                                status:400,
-                                message:err.message
-                            });
-                        }
-                        else if(success)
-                        {                       
-                            return res.status(200).json({
-                                status:200,
-                                data:success
-                            });
-                        }
-                    });
-                } 
-                 // if user's delivery option is pickup than he will see all items except delivery
-                else
+                      ],
+                      as:"seller"                            
+                  }
+              },
+              {
+                  $unwind:"$seller"
+              },
+              {
+                $addFields:
                 {
-                    cibo.items.aggregate([
-                        {
-                            $lookup:
-                            {
-                                from:"users",
-                                let:
-                                {
-                                    sellerid:"$seller_id",
-                                    active:"$active"                                   
-                                },
-                                pipeline:
-                                [                                
-                                    {
-                                        $geoNear:
-                                        {
-                                            near:result.location,
-                                            distanceField:"dist.distance",
-                                            maxDistance:150*1000,
-                                            spherical: true
-                                        }
-                                    },
-                                    {
-                                        $match:
-                                        {
-                                            $expr:
-                                            {
-                                                $and:[
-                                                    {
-                                                        $eq:["$$sellerid","$_id"]
-                                                    },{
-                                                        $ne:["$$sellerid",mongoose.Types.ObjectId(vary._id)]
-                                                    },
-                                                    // {
-                                                    //     $eq:["$$active",true]
-                                                    // }, 
-                                                    {
-                                                        $ne:["$delivery_option",["delivery"]]   // condition   just not showing delivery item                                                
-                                                        
-                                                    }                                                                                       
-                                                ]
-                                            }
-                                        }
-                                    }
-                                ],
-                                as:"seller"                            
-                            }
-                        },
-                        {
-                            $unwind:"$seller"
-                        },
-                        {
-                          $addFields:
+                    distance:"$seller.dist.distance"
+                }
+              },
+              {
+                  $project:
+                  {
+                      seller_id:1,
+                      item_name:1,
+                      picture:1,
+                      item_category:1,
+                      price:1,
+                      description:1,                                 
+                      distance:{ $round: [ "$distance", 1] } // for showing distance value and 1 value after dot                                                                                                       
+                  }
+              },
+              {
+                  $sort:{_id:-1}
+              },
+              {
+                  $limit:5
+              }                    
+             
+          ],function(err,success){
+              if(err)
+              {
+                  return res.status(400).json({
+                      status:400,
+                      message:err.message
+                  });
+              }
+              else if(success)
+              {                       
+                  return res.status(200).json({
+                      status:200,
+                      data:success
+                  });
+              }
+          });
+      } 
+       // if user's delivery option is pickup than he will see all items except delivery
+      else
+      {
+          cibo.items.aggregate([
+              {
+                  $lookup:
+                  {
+                      from:"users",
+                      let:
+                      {
+                          sellerid:"$seller_id",
+                          active:"$active"                                   
+                      },
+                      pipeline:
+                      [                                
                           {
-                              distance:"$seller.dist.distance"
+                              $geoNear:
+                              {
+                                  near:req.user_loaction,
+                                  distanceField:"dist.distance",
+                                  maxDistance:150*1000,
+                                  spherical: true
+                              }
+                          },
+                          {
+                              $match:
+                              {
+                                  $expr:
+                                  {
+                                      $and:[
+                                          {
+                                              $eq:["$$sellerid","$_id"]
+                                          },{
+                                              $ne:["$$sellerid",mongoose.Types.ObjectId(req.current_user_id)]
+                                          },
+                                          // {
+                                          //     $eq:["$$active",true]
+                                          // }, 
+                                          {
+                                              $ne:["$delivery_option",["delivery"]]   // condition   just not showing delivery item                                                
+                                              
+                                          }                                                                                       
+                                      ]
+                                  }
+                              }
                           }
-                        },
-                        {
-                            $project:
-                            {
-                                item_name:1,
-                                picture:1,
-                                item_category:1,
-                                price:1,
-                                description:1,
-                                "image":"$seller.image",                                
-                                "seller_name":"$seller.name",
-                                "reviews":"$seller.review",
-                                "lat":"$seller.lat",
-                                "long":"$seller.long",                                 
-                                distance:{ $round: [ "$distance", 1] }                                          
-                            }
-                        }                    
-                       
-                    ],function(err,success){
-                        if(err)
-                        {
-                            return res.status(400).json({
-                                status:400,
-                                message:err.message
-                            });
-                        }
-                        else if(success)
-                        {                       
-                            return res.status(200).json({
-                                status:200,
-                                data:success
-                            });
-                        }
-                    }).sort({_id:-1});
-                }    
-            }
-       });
-   });  
+                      ],
+                      as:"seller"                            
+                  }
+              },
+              {
+                  $unwind:"$seller"
+              },
+              {
+                $addFields:
+                {
+                    distance:"$seller.dist.distance"
+                }
+              },
+              {
+                  $project:
+                  {
+                      item_name:1,
+                      picture:1,
+                      item_category:1,
+                      price:1,
+                      description:1,
+                      "image":"$seller.image",                                
+                      "seller_name":"$seller.name",
+                      "reviews":"$seller.review",
+                      "lat":"$seller.lat",
+                      "long":"$seller.long",                                 
+                      distance:{ $round: [ "$distance", 1] }                                          
+                  }
+              }                    
+             
+          ],function(err,success){
+              if(err)
+              {
+                  return res.status(400).json({
+                      status:400,
+                      message:err.message
+                  });
+              }
+              else if(success)
+              {                       
+                  return res.status(200).json({
+                      status:200,
+                      data:success
+                  });
+              }
+          }).sort({_id:-1});
+        }
+     });     
 
    // add_to_cart API
    app.post('/add_cart',midleware.check,function(req,res){      

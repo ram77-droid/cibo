@@ -24,7 +24,8 @@ module.exports.check= function check(req,res,next)
             }
             else if(result)
             {                
-                 req.current_user_id=result._id    
+                 req.current_user_id=result._id,
+                 req.user_loaction=result.location    
             next();                   
             }
             else
