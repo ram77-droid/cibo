@@ -1882,14 +1882,14 @@
            {
                // getting order detail from order_id
                cibo.order.findOne({_id:req.params.order_id},function(err,success){
-                   if(err)
+                   if(err) // if error occur
                    {
                         return res.status(400).json({
                             status:400,
                             message:err
                         });
                    }
-                   else if(success)
+                   else if(success) // data found
                    {
                     return res.status(200).json({
                         status:200,
@@ -1945,14 +1945,14 @@
                }
                // updating the order status
                cibo.order.updateOne({order_number:result.order_number},{order_status:order},function(err,success){
-                   if(err)
+                   if(err) // if error occur
                    {
                         return res.status(400).json({
                             status:400,
                             message:err.message
                         });
                    }
-                   else if(success)
+                   else if(success)  // data updated
                    {
                     return res.status(200).json({
                         status:200,
@@ -1961,7 +1961,7 @@
                    }
                });
            }
-           else 
+           else // if user is not seller
            {
                return res.status(400).json({
                    status:400,
@@ -1979,7 +1979,7 @@
       {                                      
           cibo.items.aggregate([
               {
-                  $lookup:
+                  $lookup: // combining item and user collection
                   {
                       from:"users",
                       let:
@@ -1990,7 +1990,7 @@
                       pipeline:
                       [                                
                           {
-                              $geoNear:
+                              $geoNear: // distance from user's location
                               {
                                   near:req.user_loaction,
                                   distanceField:"dist.distance",
@@ -2005,7 +2005,7 @@
                                   {
                                       $and:[
                                           {
-                                              $eq:["$$sellerid","$_id"]
+                                              $eq:["$$sellerid","$_id"] // matching seller
                                           },{
                                               $ne:["$$sellerid",mongoose.Types.ObjectId(req.current_user_id)] // not to show item if user is seller
                                           },
@@ -2021,20 +2021,20 @@
                               }
                           }
                       ],
-                      as:"seller"                            
+                      as:"seller" // combined data as seller                           
                   }
               },
               {
-                  $unwind:"$seller"
+                  $unwind:"$seller" // unwinding data
               },
               {
                 $addFields:
                 {
-                    distance:"$seller.dist.distance"
+                    distance:"$seller.dist.distance" // adding distance field
                 }
               },
               {
-                  $project:
+                  $project: // projecting data as required
                   {
                       seller_id:1,
                       item_name:1,
@@ -2046,10 +2046,10 @@
                   }
               },
               {
-                  $sort:{_id:-1}
+                  $sort:{_id:-1} // sorting data by id
               },
               {
-                  $limit:5
+                  $limit:5 // limit to show is 5
               }                    
              
           ],function(err,success){
@@ -2074,7 +2074,7 @@
       {
           cibo.items.aggregate([
               {
-                  $lookup:
+                  $lookup: // combining item and user collection
                   {
                       from:"users",
                       let:
@@ -2085,11 +2085,11 @@
                       pipeline:
                       [                                
                           {
-                              $geoNear:
+                              $geoNear: // distance according to user's location
                               {
                                   near:req.user_loaction,
                                   distanceField:"dist.distance",
-                                  maxDistance:150*1000,
+                                  maxDistance:150*1000, // range
                                   spherical: true
                               }
                           },
@@ -2100,9 +2100,9 @@
                                   {
                                       $and:[
                                           {
-                                              $eq:["$$sellerid","$_id"]
+                                              $eq:["$$sellerid","$_id"] // matching seller
                                           },{
-                                              $ne:["$$sellerid",mongoose.Types.ObjectId(req.current_user_id)]
+                                              $ne:["$$sellerid",mongoose.Types.ObjectId(req.current_user_id)] // item will not visible if user is seller
                                           },
                                           // {
                                           //     $eq:["$$active",true]
@@ -2116,20 +2116,20 @@
                               }
                           }
                       ],
-                      as:"seller"                            
+                      as:"seller"   // data as seller                         
                   }
               },
               {
-                  $unwind:"$seller"
+                  $unwind:"$seller" // unwinding the data
               },
               {
                 $addFields:
                 {
-                    distance:"$seller.dist.distance"
+                    distance:"$seller.dist.distance" // adding distance field
                 }
               },
               {
-                  $project:
+                  $project: // projecting data as required
                   {
                       item_name:1,
                       picture:1,
@@ -2143,31 +2143,36 @@
                       "long":"$seller.long",                                 
                       distance:{ $round: [ "$distance", 1] }                                          
                   }
-              }                    
+              }  ,
+              {
+                  $sort:{_id:1} // sorting by id
+              }                  
              
           ],function(err,success){
-              if(err)
+              if(err) // if error occur
               {
                   return res.status(400).json({
                       status:400,
                       message:err.message
                   });
               }
-              else if(success)
+              else if(success) // showing data
               {                       
                   return res.status(200).json({
                       status:200,
                       data:success
                   });
               }
-          }).sort({_id:-1});
+          });
         }
      });     
 
    // add_to_cart API
    app.post('/add_cart',midleware.check,function(req,res){      
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
+       token=req.headers.authorization.split(' ')[1];  // spliting token
+       var vary=jwt.verify(token,'ram'); // verifying token
+
+       //finding user
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -2186,7 +2191,7 @@
                            message:err.message
                        });
                    }
-                   else if(success)
+                   else if(success) // if item find then this will showed
                    { 
                         return res.status(400).json({
                             status:400,
@@ -2217,7 +2222,7 @@
                                         message:"enter quantity please"
                                     });
                                    }
-                                   // else
+                                   // else all requiredfields in obj
                                    obj={
                                            user_id:result._id,
                                            seller_id:req.body.seller_id,
@@ -2238,7 +2243,7 @@
                                                    message:err.message
                                                });
                                            }
-                                           else if(success1)
+                                           else if(success1) // item added in cart
                                            {
                                                return res.status(200).json({
                                                    status:200,
@@ -2248,7 +2253,7 @@
                                            }
                                        });
                                }
-                               else 
+                               else // if item is not of same seller
                                {
                                    return res.status(400).json({
                                        status:400,
@@ -2266,9 +2271,10 @@
 
    // view cart API
    app.get('/view_cart',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');  
-      
+       token=req.headers.authorization.split(' ')[1]; // spliting token
+       var vary=jwt.verify(token,'ram');  // verifying token
+
+      // finding user
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -2282,7 +2288,7 @@
                // viewing cart items added by user
               cibo.cart.aggregate([
                   {
-                      $lookup:
+                      $lookup: // combining cart and user collection
                       {
                           from:'users',
                           let:{
@@ -2301,25 +2307,24 @@
                                 }
                             }
                           ],
-                          as:"items"
+                          as:"items" // combined data as items
                       }
                   },
-                  {$unwind:"$items"},
+                  {$unwind:"$items"}, // unwinding data
                   {
-                      $addFields:
+                      $addFields: // adding fields
                       {
                           lat:"$item.lat",
                          long:"$item.long"
                       }
                   },
                   {
-                      $project:
+                      $project: // projecting data as required
                       {    seller_id:1,                     
                           picture:1,
                           item_name:1,
                           quantity:1,
-                          price:1,
-                         // total_pay:1,
+                          price:1,                        
                          item_id:1                        
                       }
                   }
@@ -2334,9 +2339,9 @@
                   else if(result1)
                   {                     
                       var grand_total=0;
-                      for(var i=0;i<result1.length;i++)
+                      for(var i=0;i<result1.length;i++) // adding all price of items in one
                       {
-                        grand_total=grand_total+result1[i].price*result1[i].quantity;                         
+                        grand_total=grand_total+result1[i].price*result1[i].quantity;  // total price of all items                       
                       }
                       return res.status(200).json({
                           status:200,
@@ -2351,8 +2356,10 @@
 
    // view only item API
    app.get('/only_item/:item_id',midleware.check,function(req,res){
-    token=req.headers.authorization.split(' ')[1];
-    var vary=jwt.verify(token,'ram');
+    token=req.headers.authorization.split(' ')[1]; // spliting token
+    var vary=jwt.verify(token,'ram');  // verifying token
+
+    // finding user
     cibo.users.findOne({_id:vary._id},function(err,result){
         if(err)
         {
@@ -2366,7 +2373,7 @@
              // showing item after clicking on item           
              cibo.items.aggregate([
                  {
-                     $lookup:
+                     $lookup: // combining item and user collection
                      {
                          from:"users",
                          let:
@@ -2377,11 +2384,11 @@
                          pipeline:
                          [                                
                              {
-                                 $geoNear:  // find seller in range
+                                 $geoNear:  // distance of sellers from user location
                                  {
                                      near:result.location,
                                      distanceField:"dist.distance",
-                                     maxDistance:150*1000,
+                                     maxDistance:150*1000, // range
                                      spherical: true
                                  }
                              },
@@ -2392,7 +2399,7 @@
                                      {
                                          $and:[
                                              {
-                                                 $eq:["$$sellerid","$_id"]
+                                                 $eq:["$$sellerid","$_id"] // matching seller
                                              },{
                                                  $eq:["$$id",mongoose.Types.ObjectId(req.params.item_id)] // matching id with id comes in params
                                              }                                           
@@ -2401,14 +2408,14 @@
                                  }
                              }
                          ],
-                         as:"seller"                            
+                         as:"seller"   // data as seller                         
                      }
                  },
                  {
-                     $unwind:"$seller"
+                     $unwind:"$seller" // unwinding data
                  },
                  {
-                   $addFields:
+                   $addFields: // adding fields
                    {
                        seller_id:"$seller._id",
                        distance:"$seller.dist.distance",
@@ -2416,7 +2423,7 @@
                    }
                  },
                  {
-                     $project:
+                     $project: // projecting data as required
                      {
                          picture:1,
                          item_name:1, 
@@ -2425,6 +2432,9 @@
                          seller_name:1,
                          distance:{ $round: [ "$distance", 1] }                                        
                      }
+                 },
+                 {
+                     $sort:{_id:-1} // sorting data in descending
                  }                    
                 
              ],function(err,success){
@@ -2442,15 +2452,17 @@
                          data:success
                      });
                  }
-             }).sort({_id:-1});
+             });
          }
     });
    });
 
    // view favourite API
    app.get('/view_favourite',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
+       token=req.headers.authorization.split(' ')[1]; // spliting token
+       var vary=jwt.verify(token,'ram'); // verifying token
+
+       // finding user
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -2464,7 +2476,7 @@
                // viewing favourite items
                cibo.items.aggregate([
                    {
-                       $lookup:
+                       $lookup: // combining item and favourite collection
                        {
                            from:"favourites",
                            let:{
@@ -2489,14 +2501,14 @@
                                    }
                                }
                            ],
-                           as:"fav"
+                           as:"fav" // combined data as fav
                        }
                    },
                    {
-                       $unwind:"$fav"
+                       $unwind:"$fav" // unwinding data
                    },
                    {
-                    $lookup: // second lookup for finding saller name
+                    $lookup: // scombining item with user collection
                     {
                         from:"users",
                         let:
@@ -2506,11 +2518,11 @@
                         pipeline:
                         [                                
                             {
-                                $geoNear:
+                                $geoNear: // distance of seller form user's location
                                 {
                                     near:result.location,
                                     distanceField:"dist.distance",
-                                    maxDistance:150*1000,
+                                    maxDistance:150*1000, // range
                                     spherical: true
                                 }
                             },
@@ -2521,23 +2533,23 @@
                                     {
                                         $and:[
                                             {
-                                                $eq:["$$sellerid","$_id"]
+                                                $eq:["$$sellerid","$_id"]  // matching seller
                                             },{
-                                                $ne:["$$sellerid",mongoose.Types.ObjectId(vary._id)]
+                                                $ne:["$$sellerid",mongoose.Types.ObjectId(vary._id)] // if user is seller
                                             }                                           
                                         ]
                                     }
                                 }
                             }
                         ],
-                        as:"seller"                            
+                        as:"seller"    // combined data as seller                        
                     }
                 },
                 {
-                   $unwind:"$seller"
+                   $unwind:"$seller" // unwinding data
                 },
                 {
-                    $addFields:
+                    $addFields: // adding fields
                     {
                         seller_name:"$seller.name",
                         distance:"$seller.dist.distance"
@@ -2545,7 +2557,7 @@
 
                 },
                 {
-                    $project:
+                    $project:  // projecting data as required
                     {
                         picture:1,
                         item_name:1,
@@ -2578,8 +2590,10 @@
 
    // view profile API
    app.get('/view_profile',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
+       token=req.headers.authorization.split(' ')[1]; // spliting token
+       var vary=jwt.verify(token,'ram'); // verifying token
+
+       // finding user
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -2594,7 +2608,7 @@
                if(result.seller==true)
                {
                     var sum=0,rating,rating1;         
-                    for(var i=0;i<result.review.length;i++)
+                    for(var i=0;i<result.review.length;i++) // finding average of all rating
                     {               
                     sum=sum + result.review[i].rating;
                     }
@@ -2635,8 +2649,10 @@
 
    // view seller profile API
    app.get('/seller_profile/:seller_id',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
+       token=req.headers.authorization.split(' ')[1]; // spliting token
+       var vary=jwt.verify(token,'ram'); // verifying token
+
+       // finding user
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -2656,7 +2672,7 @@
                         message:err.message
                     });
                 }
-                else if(success)
+                else if(success) // showing data as of query
                 {
                     return res.status(200).json({
                         status:200,
@@ -2672,8 +2688,10 @@
 
    // delete favourite item API
    app.delete('/delete_favourite_item/:item_id',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
+       token=req.headers.authorization.split(' ')[1]; // spliting token
+       var vary=jwt.verify(token,'ram'); // verifying token
+
+       // finding and updating user in facourite collection
        cibo.favourite.findOneAndDelete({user_id:vary._id,item_id:req.params.item_id},function(err,result){
            if(err)
            {
@@ -2682,20 +2700,22 @@
                    message:err.message
                });
            }
-           else if(result)
+           else if(result) // irem deleted
            {           
-                             return res.status(200).json({
-                               status:200,
-                               message:"item deleted"
-                           });
+                    return res.status(200).json({
+                    status:200,
+                    message:"item deleted"
+                });
            }
        });
    });
 
    // edit item API
    app.post('/edit_item',profile.any(),midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
+       token=req.headers.authorization.split(' ')[1]; // spliting token
+       var vary=jwt.verify(token,'ram'); // verifyig token
+
+       // finding user
        cibo.users.findOne({_id:vary._id},function(err,result){
            if(err)
            {
@@ -2706,9 +2726,9 @@
            }
            else if(result)
            {
-               if(req.body.picture)
+               if(req.body.picture) // if picture of item is updating
                {
-                    obj=
+                    obj= // all fields in obj
                     {
                         seller_id:result._id,
                         picture:req.files[0].location,
@@ -2718,16 +2738,17 @@
                         description:req.body.description,
                         special_notes:req.body.special_notes,
                         active:req.body.active
-                    }               
+                    }   
+                    // updating the data            
                     cibo.items.updateOne({seller_id:result._id,_id:mongoose.Types.ObjectId(req.body._id)},obj,function(err,result){
-                        if(err)
+                        if(err) // if error occur
                         {
                             return res.status(400).json({
                                 status:400,
                                 message:err.message
                             });
                         }
-                        else if(result)
+                        else if(result) // data updated
                         {
                             return res.status(200).json({
                                 status:200,
@@ -2737,9 +2758,9 @@
                         }
                     });
                }
-               else
+               else // if picture is not updated
                {
-                obj=
+                obj= // all fields ain obj
                 {
                     seller_id:result._id,                   
                     item_name:req.body.item_name,
@@ -2748,16 +2769,17 @@
                     description:req.body.description,
                     special_notes:req.body.special_notes,
                     active:req.body.active
-                }               
+                }  
+                // updating data             
                 cibo.items.updateOne({seller_id:result._id,_id:mongoose.Types.ObjectId(req.body._id)},obj,function(err,result){
-                    if(err)
+                    if(err) // if error occur
                     {
                         return res.status(400).json({
                             status:400,
                             message:err.message
                         });
                     }
-                    else if(result)
+                    else if(result) // data updated
                     {
                         return res.status(200).json({
                             status:200,
@@ -2774,10 +2796,12 @@
 
    // view user by seller API
    app.get('/view_user',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
+       token=req.headers.authorization.split(' ')[1]; // spliting token
+       var vary=jwt.verify(token,'ram'); // verifying token
+
+       // finding user
        cibo.users.findOne({_id:vary._id},function(err,result){
-           if(err)
+           if(err) // if error occur
            {
                return res.status(400).json({
                    status:400,
@@ -2788,7 +2812,7 @@
            {
                cibo.order.aggregate([
                    {
-                       $lookup:
+                       $lookup: // combining order and user collection
                        {
                            from:'users',
                            let:
@@ -2799,37 +2823,37 @@
                            pipeline:
                            [
                                {
-                                   $match:
+                                   $match: // matching conditions
                                    {
                                        $expr:
                                        {
                                            $and:[
                                                {
-                                                $eq:["$$userid","$_id"],
+                                                $eq:["$$userid","$_id"], // matching user id
                                                },
                                                {
-                                                $eq:["$$sellerid",mongoose.Types.ObjectId(vary._id)]
+                                                $eq:["$$sellerid",mongoose.Types.ObjectId(vary._id)] // matching seller id
                                                }                                         
                                            ]                                          
                                        }
                                    }
                                }
                            ],
-                           as:"viewuser"
+                           as:"viewuser" // combined data as view user
                        }
                    },
                    {
-                       $unwind:"$viewuser"
+                       $unwind:"$viewuser" // unwinding data
                    },
                    {
-                       $addFields:
+                       $addFields: // adding fields
                        {
                            username:"$viewuser.name",
                            deliverytype:"$viewuser.delivery_option"
                        }
                    },
                    {
-                       $project:
+                       $project: // projecting data as required
                        {
                            quantity:1,
                            total_pay:1,
@@ -2861,10 +2885,12 @@
 
    // review API
    app.post('/review',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
+       token=req.headers.authorization.split(' ')[1]; // spliting token
+       var vary=jwt.verify(token,'ram'); // verifying token
+
+       // finding user
        cibo.users.findOne({_id:vary._id},function(err,result){
-           if(err)
+           if(err) // if error occur
            {
                return res.status(400).json({
                    status:400,
@@ -2876,15 +2902,16 @@
                // push every time in review           
               req.body.review.forEach(element => {
                 
+                // adding reviews in seller's id
                 cibo.users.updateOne({_id:req.body.seller_id},{ $push:{review:{$each:[{user_id:result._id,order_id:element.order_id,rating:element.rating,message:element.message}]}}},function(err,success){
-                    if(err)
+                    if(err) //  if error occur
                     {
                         return res.status(400).json({
                             status:400,
                             message:err.message
                         });
                     }
-                    else if(success)
+                    else if(success) // data updated
                     {
                         return res.status(200).json({
                             status:200,
@@ -2899,17 +2926,19 @@
 
    // view_review API
    app.get('/view_review',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
+       token=req.headers.authorization.split(' ')[1]; // spliting token
+       var vary=jwt.verify(token,'ram'); // verifying token
+
+       // finding user
        cibo.users.findOne({_id:vary._id},function(err,result){
-           if(err)
+           if(err) // if error occur
            {
                return res.status(400).json({
                    status:400,
                    message:err.message
                });
            }
-           else if(result)
+           else if(result) // showing data
            {              
                return res.status(200).json({
                    status:200,                  
@@ -3406,8 +3435,10 @@
 
    // add bio API
    app.post('/add_bio',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
+       token=req.headers.authorization.split(' ')[1]; // spliting token
+       var vary=jwt.verify(token,'ram'); // verifying token
+
+       // finding and updating user data
        cibo.users.findOneAndUpdate({_id:vary._id},{bio:req.body.bio},function(err,result){
            if(err)
            {
@@ -3416,7 +3447,7 @@
                    message:err.message
                });
            }
-           else if(result)
+           else if(result) // bio updated
            {
                return res.status(200).json({
                    status:200,
@@ -3428,10 +3459,12 @@
 
    // search API
    app.post('/search',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
+       token=req.headers.authorization.split(' ')[1]; // spliting token
+       var vary=jwt.verify(token,'ram'); // verifying token
+
+       // finding user
        cibo.users.findOne({_id:vary._id},function(err,result){
-           if(err)
+           if(err) // if error occur
            {
                return res.status(400).json({
                    status:400,
@@ -3439,7 +3472,8 @@
                });
            }
            else if(result)
-           {              
+           {          
+               // if user's options is delivery    
                if(result.delivery_option=="delivery")
                {                
                  cibo.items.aggregate([                
@@ -3447,13 +3481,13 @@
                         $match: // matching a single letter if present in item name and category
                         {
                              $or:[
-                             {item_name:{$regex:req.body.text,$options:"i"} },
-                            {item_category:{$regex:req.body.text,$options:"i"} }
+                             {item_name:{$regex:req.body.text,$options:"i"} }, // insensitive search at item name
+                            {item_category:{$regex:req.body.text,$options:"i"} } // insensitive search at item category
                              ]
                         }             
                      },  
                     {
-                        $lookup:
+                        $lookup: // combining item and user collection
                         {
                             from:"users",
                             let:
@@ -3465,54 +3499,54 @@
                             pipeline:
                             [                            
                                 {
-                                    $geoNear:
+                                    $geoNear: // distance of seller from user's location
                                     {
                                         near:result.location,
                                         distanceField:"dist.distance",
-                                        maxDistance:150*1000,
+                                        maxDistance:150*1000, // range
                                         spherical: true
                                     }
                                 },
                                 {
-                                    $match:
+                                    $match:  // matching conditions
                                     {                                    
                                         $expr:
                                         {
                                             $and:[
                                                 {
-                                                    $eq:["$$sellerid","$_id"]
+                                                    $eq:["$$sellerid","$_id"] // matching seller id
                                                 },
                                                 {
-                                                    $ne:["$$sellerid",mongoose.Types.ObjectId(vary._id)]
+                                                    $ne:["$$sellerid",mongoose.Types.ObjectId(vary._id)] // if user is seller
                                                 },
                                                 // {
                                                 //     $eq:["$$active",true]
                                                 // }, 
                                                 {
-                                                    $ne:["$delivery_option","pickup"]             
+                                                    $ne:["$delivery_option","pickup"] // showing all items except pickup option items            
                                                 }                                                                                                                                                                                                                 
                                             ]
                                         }
                                     }
                                 }
                             ],
-                            as:"seller"                            
+                            as:"seller"  // combined data as seller                          
                         }
                     },
 
                     {
-                        $unwind:"$seller"
+                        $unwind:"$seller" // unwinding data
                     },
 
                     {
-                    $addFields:
+                    $addFields: // adding field
                     {
                         distance:"$seller.dist.distance"
                     }
                     },
 
                     {
-                        $project:
+                        $project: // projecting data as required
                         {
                             picture:1,
                             item_name:1,  
@@ -3536,20 +3570,21 @@
                     }
                  });
                }
-        else
+
+        else // user option is pickup
         {
             cibo.items.aggregate([                
                 {
-                    $match:
+                    $match: // matching item name or category
                     {
                          $or:[
-                         {item_name:{$regex:req.body.text,$options:"i"} },
-                        {item_category:{$regex:req.body.text,$options:"i"} }
+                         {item_name:{$regex:req.body.text,$options:"i"} }, // insensitive search at item name
+                        {item_category:{$regex:req.body.text,$options:"i"} } // insensitive search at item category
                          ]
                     }             
                  },  
                 {
-                    $lookup:
+                    $lookup: // combining item and user collecion
                     {
                         from:"users",
                         let:
@@ -3561,54 +3596,54 @@
                         pipeline:
                         [                            
                             {
-                                $geoNear:
+                                $geoNear: // distance of seller from user's location
                                 {
                                     near:result.location,
                                     distanceField:"dist.distance",
-                                    maxDistance:150*1000,
+                                    maxDistance:150*1000, // range
                                     spherical: true
                                 }
                             },
                             {
-                                $match:
+                                $match: // matching conditions
                                 {                                    
                                     $expr:
                                     {
                                         $and:[
                                             {
-                                                $eq:["$$sellerid","$_id"]
+                                                $eq:["$$sellerid","$_id"] // matching seller id
                                             },
                                             {
-                                                $ne:["$$sellerid",mongoose.Types.ObjectId(vary._id)]
+                                                $ne:["$$sellerid",mongoose.Types.ObjectId(vary._id)] // if user is seller id
                                             },
                                             // {
                                             //     $eq:["$$active",true]
                                             // }, 
                                             {
-                                                $ne:["$delivery_option","delivery"]             
+                                                $ne:["$delivery_option","delivery"]   // showing all items except delivery option items          
                                             }                                                                                                                                                                                                                 
                                         ]
                                     }
                                 }
                             }
                         ],
-                        as:"seller"                            
+                        as:"seller"     // combined data as seller                       
                     }
                 },
 
                 {
-                    $unwind:"$seller"
+                    $unwind:"$seller" // unwinding data
                 },
 
                 {
-                $addFields:
+                $addFields: // adding field
                 {
                     distance:"$seller.dist.distance"
                 }
                 },
 
                 {
-                    $project:
+                    $project: // projecting data as required
                     {
                         picture:1,
                         item_name:1,  
@@ -3616,14 +3651,14 @@
                     }
                 }                   
              ],function(err,success){
-                if(err)
+                if(err) // if error occur
                 {
                     return res.status(400).json({
                         status:400,
                         message:err.message
                     });
                 }
-                else if(success)
+                else if(success) // showing data
                 {                       
                     return res.status(200).json({
                         status:200,
@@ -3639,10 +3674,12 @@
 
    // trending items API
    app.get('/trending',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
+       token=req.headers.authorization.split(' ')[1]; // spliting token
+       var vary=jwt.verify(token,'ram'); // verifying token
+
+       // finding user
        cibo.users.findOne({_id:vary._id},function(err,result){
-           if(err)
+           if(err) // if error occur
            {
                return res.status(400).json({
                    status:400,
@@ -3653,7 +3690,7 @@
            {
                cibo.items.aggregate([
                    {
-                       $lookup: // for favourites item count
+                       $lookup: // combining item and favourite collection
                        {
                            from:'favourites',
                            let:
@@ -3663,31 +3700,31 @@
                            pipeline:
                            [
                                {
-                                   $match:
+                                   $match: // matching conditions
                                    {
                                        $expr:
                                        {
                                            $and:[
-                                            {$eq:["$$itemid","$item_id"]},
-                                            {$eq:["$status",true]}
+                                            {$eq:["$$itemid","$item_id"]}, // matching item id
+                                            {$eq:["$status",true]} // matching status
                                             //{$eq:["$user_id",mongoose.Types.ObjectId(vary._id)]}
                                            ]                                           
                                        }
                                    }
                                },
                                {
-                                   $count:"status"
+                                   $count:"status" // count like status in favourite
                                }
                            ],
-                           as:"trend"
+                           as:"trend" // it gives count
                        }
                    },                                  
                    {
-                       $unwind:"$trend"
+                       $unwind:"$trend" // unwinding data
                    },
                   
                    {
-                       $lookup: // for seller info
+                       $lookup: // combining item with user collection 
                        {
                            from:'users',
                            let:
@@ -3697,33 +3734,33 @@
                            pipeline:
                            [
                                 {
-                                    $geoNear:
+                                    $geoNear: // distance of seller from user's location
                                     {
                                         near:result.location,
                                         distanceField:"dist.distance",
-                                        maxDistance:150*1000,
+                                        maxDistance:150*1000, // range
                                         spherical: true                                        
                                     }
                                 },
 
                                {
-                                   $match:
+                                   $match: // matching condition
                                    {
                                        $expr:
                                        {
-                                           $eq:["$$sellerid","$_id"]
+                                           $eq:["$$sellerid","$_id"] // matching seller id
                                        }
                                    }
                                }
                            ],
-                           as:"trend1"
+                           as:"trend1" // combined data 
                        }
                    },
                    {
-                       $unwind:"$trend1"
+                       $unwind:"$trend1" // unwinding data
                    },
                    {
-                       $lookup: // for like status of user
+                       $lookup: // combining item with favourite collection again to show if user liked on that item
                        {
                            from:'favourites',
                            let:
@@ -3733,37 +3770,37 @@
                            pipeline:
                            [
                                {
-                                   $match:
+                                   $match: // matching connditions 
                                    {
                                        $expr:
                                        {
                                            $and:[
-                                               {$eq:["$$item","$item_id"]},
-                                               {$eq:["$user_id",mongoose.Types.ObjectId(vary._id)]}
+                                               {$eq:["$$item","$item_id"]}, // matching item id
+                                               {$eq:["$user_id",mongoose.Types.ObjectId(vary._id)]} // matching user id
                                            ]
                                        }
                                    }
                                }
                            ],
-                           as:"favour"
+                           as:"favour" // combined data
                        
                        }
                    },
                    {
-                       $unwind:{
+                       $unwind:{  // unwinding data
                            path:"$favour",
-                           preserveNullAndEmptyArrays: true
+                           preserveNullAndEmptyArrays: true // to show result either condition fulfiled or not
                        }
                    },
                    {
-                       $addFields:
+                       $addFields: // adding fields
                        {
                            distance:"$trend1.dist.distance",
                            count:"$trend.status"                           
                        }
                    },
                    {
-                       $project:
+                       $project: // projecting data as required
                        {
                            seller_id:1,
                            item_name:1,
@@ -3777,10 +3814,10 @@
                        }
                    },
                    {
-                    $sort:{count:-1}
+                    $sort:{count:-1} // sorting by count in descending order
                     },
                     { 
-                        $limit : 5
+                        $limit : 5 // applying limit
                     }
                ],function(err,success){
                    if(err)
@@ -3803,18 +3840,21 @@
    });
 
    // info API
+   // for info of user as user or seller
    app.get('/info',midleware.check,function(req,res){
-       token=req.headers.authorization.split(' ')[1];
-       var vary=jwt.verify(token,'ram');
+       token=req.headers.authorization.split(' ')[1]; // spliting token
+       var vary=jwt.verify(token,'ram'); // verifying token
+
+       // finding user
        cibo.users.findOne({_id:vary._id},function(err,result){
-           if(err)
+           if(err) // if error occur
            {
                return res.status(400).json({
                    status:400,
                    message:err.message
                });
            }
-           else if(result)
+           else if(result) // showing data
            {
                return res.status(200).json({
                    status:200,
@@ -3824,7 +3864,7 @@
        });
    });
   
-
+  // server listening on port 5000
     const PORT = process.env.PORT || 5000;
     app.listen(PORT, function(){
         console.log('Server listening on port 5000');
