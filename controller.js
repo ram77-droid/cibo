@@ -19,14 +19,15 @@
     var cors=require('cors');
     app.use(cors());
     var dotenv=require('dotenv');
-    dotenv.config();     
+    dotenv.config();    
+    app.use(express.static(__dirname)); 
    
-    const AWS = require('aws-sdk');
-    const multers3 = require('multer-s3');
-    const s3 = new AWS.S3({
-    accessKeyId:process.env.AWS_ACCESS_KEY,
-    secretAccessKey:process.env.AWS_SECRET_ACCESS_KEY
-    });
+    // const AWS = require('aws-sdk');
+    // const multers3 = require('multer-s3');
+    // const s3 = new AWS.S3({
+    // accessKeyId:process.env.AWS_ACCESS_KEY,
+    // secretAccessKey:process.env.AWS_SECRET_ACCESS_KEY
+    // });
     
     const fileFilter = (req, file, cb) => {
     if (file.mimetype === "image/jpeg" || file.mimetype === "image/png" || file.mimetype === "image/jpg" || file.mimetype === "image/JPEG" ||file.mimetype === "image/JPG" || file.mimetype === "image/PNG") {
@@ -35,19 +36,16 @@
     cb(new Error("Invalid file type, only JPEG and PNG is allowed!"), false);
     }
     };
-    const profile = multer({fileFilter,storage: multers3({
-    acl: "public-read",
-    s3,
-    bucket: process.env.AWSBucketName,
-    metadata: function (req, file, cb) {
-    cb(null, { fieldName: "TESTING_METADATA" });
-    },
-    contentType: multers3.AUTO_CONTENT_TYPE,
-    key: function (req, file, cb) {
-    cb(null, Date.now().toString()+path.extname(file.originalname));
-    },
-    }),
-    });
+    const storage=multer.diskStorage({
+        destination:function(req,file,callback){
+            callback(null,__dirname+'/picture_storage');
+        },
+        filename:function(req,file,callback){
+            callback(null,file.fieldname+'-'+Date.now() + path.extname(file.originalname));
+        }
+    })
+    const profile = multer({fileFilter,storage:storage });
+
      
     // sign up API
     app.post('/signup',function(req,res){    
@@ -900,25 +898,25 @@
                     // getting image in image field               
                     if(req.files[i].fieldname=="image")
                     {
-                        image=req.files[i].location;
+                        image='http://192.168.1.20:5000/picture_storage/'+req.files[0].filename;
                        // console.log("image:",image);
                     }
                     // getting pan card image in pan card field
                     else if(req.files[i].fieldname=="pan_card_image")
                     {
-                        pan_card_image=req.files[i].location;
+                        pan_card_image='http://192.168.1.20:5000/picture_storage/'+req.files[0].filename;
                         //console.log("pan:",pan_card_image);
                     }
                     // getting adhar_card_image_front in adhar_card_image_front field
                     else if(req.files[i].fieldname=="adhar_card_image_front")
                     {
-                        adhar_card_image_front=req.files[i].location;
+                        adhar_card_image_front='http://192.168.1.20:5000/picture_storage/'+req.files[0].filename;
                        // console.log("adhar front:",adhar_card_image_front);
                     }
                     // getting adhar_card_image_back in adhar_card_image_back field
                     else if(req.files[i].fieldname=="adhar_card_image_back")
                     {
-                        adhar_card_image_back=req.files[i].location;
+                        adhar_card_image_back='http://192.168.1.20:5000/picture_storage/'+req.files[0].filename;
                        // console.log("adhar back:",adhar_card_image_back);
                     }
                 }
@@ -1069,7 +1067,7 @@
                         obj=
                         {
                             seller_id:result._id,
-                            picture:req.files[0].location,
+                            picture:'http://192.168.1.20:5000/picture_storage/'+req.files[0].filename,
                             item_name:req.body.item_name,
                             item_category:req.body.item_category,
                             price:req.body.price,
@@ -1288,6 +1286,7 @@
                     item: req.body.item,
                     grand_total:req.body.grand_total,
                     payment_method:req.body.payment_method,
+                    delivery_type:req.body.delivery_type,
                     created_at:Date.now()    
                 }
                 // order created here added by user
@@ -1370,6 +1369,8 @@
 
     // edit profile API
     app.post('/edit_profile',profile.any(),midleware.check,function(req,res){
+
+        console.log(req.files);
         token=req.headers.authorization.split(' ')[1];  //spliting token
         var vary=jwt.verify(token,'ram');  // verifying token
         // finding user
@@ -1388,7 +1389,7 @@
                 {
                     obj={
                         name:req.body.name,
-                        image:req.files[0].location,
+                        image:'http://192.168.1.20:5000/picture_storage/'+req.files[0].filename,
                         email:req.body.email,
                         phone_no:req.body.phone_no,
                         bio:req.body.bio
@@ -1568,7 +1569,7 @@
                // getting all fields in obj
                obj=
                {
-                   pictures:req.files[0].location,
+                   pictures:'http://192.168.1.20:5000/picture_storage/'+req.files[0].filename,
                    user_id:result._id,
                    title:req.body.title,
                    description:req.body.description,
@@ -2232,7 +2233,8 @@
                                            price:req.body.price,
                                            picture:req.body.picture,
                                            special_instruction:req.body.special_instruction,
-                                           total_pay:req.body.price*req.body.quantity
+                                           total_pay:req.body.price*req.body.quantity,
+                                           delivery_type:req.body.delivery_type
                                        }
                                        // adding item in cart
                                        cibo.cart.create(obj,function(err,success1){
@@ -2731,7 +2733,7 @@
                     obj= // all fields in obj
                     {
                         seller_id:result._id,
-                        picture:req.files[0].location,
+                        picture:'http://192.168.1.20:5000/picture_storage/'+req.files[0].filename,
                         item_name:req.body.item_name,
                         item_category:req.body.item_category,
                         price:"Rs "+req.body.price,

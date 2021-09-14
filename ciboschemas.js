@@ -185,7 +185,8 @@ var order_schema = new Schema({
     },
     item:[arr],   
     payment_method:String,
-    created_at:Date
+    created_at:Date,
+    delivery_type:String
 });
 
 // add cart schema
@@ -209,7 +210,8 @@ var cart_schema = new Schema({
     picture:String,
     item_name:String,
     price:Number,
-    quantity:Number
+    quantity:Number,
+    delivery_type:String
    
 });
 
