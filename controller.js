@@ -1677,10 +1677,9 @@
    });
 
    // get order API
-   app.get('/view_order/:type',midleware.check,function(req,res){
+   app.get('/view_order_by_seller',midleware.check,function(req,res){
        token=req.headers.authorization.split(' ')[1]; // spliting token
        var vary=jwt.verify(token,'ram');     // verifying token
-
        // finding user
        cibo.users.findOne({_id:vary._id},function(err,result){
           
@@ -1694,7 +1693,7 @@
            else if(result)
            {    
                // if user is seller then this work          
-               if(req.params.type=="seller" && result.seller==true)
+               if(result.seller==true)
                {                  
                    cibo.order.aggregate([
                        {
@@ -1763,106 +1762,132 @@
                // if user is not seller
                else
                {                  
-                  cibo.order.aggregate([
-                    { $addFields: { firstitem: { $first: "$item" } } }, // for matching first item of item array
-                    {
-                        $lookup:
-                        {
-                            from:"items", // from item collection
-                            let: { itemid:"$firstitem.item_id"}, // first item id 
-                            pipeline:[
-                            {
-                            $match:{
-                            $expr:{
-                            $and:[
-                            {$eq:["$$itemid","$_id"]} // mstching item ids
-                            ]
-                            }
-                            }
-                        }],
-                        as:"orderitem" // return as orderitem
-                     }
-                    },
-                    {$unwind:"$orderitem"}, // unwinding orderitem
-                        {
-                            $lookup:  // second lookup with users coillection
-                            {
-                                from:'users',
-                                let:
-                                {
-                                    sellerid:"$seller_id",                                   
-                                    userid:"$user_id",
-                                    orderid:"$_id"                                   
-                                },
-                                pipeline:
-                                [
-                                    {
-                                        $match: // matching conditions
-                                        {
-                                            $expr:
-                                            {
-                                                $and:
-                                                [
-                                                    {$eq:["$$sellerid","$_id"] }, // matchind seller ids                                                   
-                                                    {$eq:["$$userid",mongoose.Types.ObjectId(vary._id)]},  // matching user ids                                                                                                    
-                                                ]                                              
-                                            }
-                                        }
-                                    }
-                                ],
-                                as:"seller"  // return as seller                               
-                            }
-                        },
-                        {
-                            $unwind:{path:"$seller",preserveNullAndEmptyArrays: true} // unwinding seller
-                        },                  // preserve null empty array is true if data is not find as conditions but want to show rest data
-                        {
-                            $addFields:
-                            {
-                                sellername:"$seller.name", // adding fields
-                                review:"$seller.review"                               
-                            }
-                        },
-                        {
-                            $project: // projecting data as we want to show
-                            {
-                                order_status:1,                                
-                                item:1,                                
-                                review:{
-                                    $filter: { // filtering the review data
-                                    input: "$review",
-                                    as: "item",
-                                    cond: { $eq:["$$item.order_id","$_id"] }   // matching order id                                 
-                                     }
-                                    },                                                              
-                                order_number:1,
-                                grand_total:1,
-                                created_at:1,
-                                sellername:1,
-                                payment_method:1
-                                                             
-                            }
-                        }
-                    ],function(err,result1)
-                    {
-                        if(err)
-                        {
-                            return res.status(400).json({
-                                status:400,
-                                message:err.message
-                            });
-                        }
-                        else if(result1)
-                        {
-                            return res.status(200).json({
-                                status:200,
-                                data:result1
-                            });
-                        }
-                    }).sort({_id:-1});
+                return res.status(200).json({
+                    status:200,
+                    message:"seller not found"
+                });
                }              
            }
        });
+   });
+
+   // view order by user
+   app.get('/view_order_by_user',midleware.check,function(req,res){
+    token=req.headers.authorization.split(' ')[1]; // spliting token
+    var vary=jwt.verify(token,'ram');
+
+    cibo.users.findOne({_id:vary._id},function(err,result){          
+        if(err)
+        {
+            return res.status(400).json({
+                status:400,
+                message:err.message
+            });
+        }
+        else if(result)
+        {
+            cibo.order.aggregate([
+                { $addFields: { firstitem: { $first: "$item" } } }, // for matching first item of item array
+                {
+                    $lookup:
+                    {
+                        from:"items", // from item collection
+                        let: { itemid:"$firstitem.item_id"}, // first item id 
+                        pipeline:[
+                        {
+                        $match:{
+                        $expr:{
+                        $and:[
+                        {$eq:["$$itemid","$_id"]} // mstching item ids
+                        ]
+                        }
+                        }
+                    }],
+                    as:"orderitem" // return as orderitem
+                 }
+                },
+                {$unwind:"$orderitem"}, // unwinding orderitem
+                    {
+                        $lookup:  // second lookup with users coillection
+                        {
+                            from:'users',
+                            let:
+                            {
+                                sellerid:"$seller_id",                                   
+                                userid:"$user_id",
+                                orderid:"$_id"                                   
+                            },
+                            pipeline:
+                            [
+                                {
+                                    $match: // matching conditions
+                                    {
+                                        $expr:
+                                        {
+                                            $and:
+                                            [
+                                                {$eq:["$$sellerid","$_id"] }, // matchind seller ids                                                   
+                                                {$eq:["$$userid",mongoose.Types.ObjectId(vary._id)]},  // matching user ids                                                                                                    
+                                            ]                                              
+                                        }
+                                    }
+                                }
+                            ],
+                            as:"seller"  // return as seller                               
+                        }
+                    },
+                    {
+                        $unwind:{path:"$seller",preserveNullAndEmptyArrays: true} // unwinding seller
+                    },                  // preserve null empty array is true if data is not find as conditions but want to show rest data
+                    {
+                        $addFields:
+                        {
+                            sellername:"$seller.name", // adding fields
+                            review:"$seller.review"                               
+                        }
+                    },
+                    {
+                        $project: // projecting data as we want to show
+                        {
+                            order_status:1,                                
+                            item:1,                                
+                            review:{
+                                $filter: { // filtering the review data
+                                input: "$review",
+                                as: "item",
+                                cond: { $eq:["$$item.order_id","$_id"] }   // matching order id                                 
+                                 }
+                                },                                                              
+                            order_number:1,
+                            grand_total:1,
+                            created_at:1,
+                            sellername:1,
+                            payment_method:1
+                                                         
+                        }
+                    },
+                    {
+                        $sort:{_id:-1}
+                    }
+                ],function(err,success)
+                {
+                    if(err)
+                    {
+                        return res.status(400).json({
+                            status:400,
+                            message:err.message
+                        });
+                    }
+                    else if(success)
+                    {
+                        return res.status(200).json({
+                            status:200,
+                            data:success
+                        });
+                    }
+                });
+        }
+    });
    });
 
    //order detail API
