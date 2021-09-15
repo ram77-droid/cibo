@@ -1067,7 +1067,7 @@
                         obj=
                         {
                             seller_id:result._id,
-                            picture:'http://192.168.1.20:5000/picture_storage/'+req.files[0].filename,
+                            picture:'http://192.168.1.29:5000/picture_storage/'+req.files[0].filename,
                             item_name:req.body.item_name,
                             item_category:req.body.item_category,
                             price:req.body.price,
@@ -1389,7 +1389,7 @@
                 {
                     obj={
                         name:req.body.name,
-                        image:'http://192.168.1.20:5000/picture_storage/'+req.files[0].filename,
+                        image:'http://192.168.1.29:5000/picture_storage/'+req.files[0].filename,
                         email:req.body.email,
                         phone_no:req.body.phone_no,
                         bio:req.body.bio
@@ -1569,7 +1569,7 @@
                // getting all fields in obj
                obj=
                {
-                   pictures:'http://192.168.1.20:5000/picture_storage/'+req.files[0].filename,
+                   pictures:'http://192.168.1.29:5000/picture_storage/'+req.files[0].filename,
                    user_id:result._id,
                    title:req.body.title,
                    description:req.body.description,
